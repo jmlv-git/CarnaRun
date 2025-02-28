@@ -1,0 +1,2 @@
+Tamanho do player: 64pixel
+Tamanho dos blocos 32pixel
