@@ -62,6 +62,11 @@ def is_traversable(cell, b_count, jump_count):
     return False
 
 def bfs_distance(maze, start, end, b_count, jump_count):
+    """
+    Faz uma busca em largura para verificar se existe um caminho.
+    Retorna a distância em passos se houver caminho, ou None se não houver.
+    (Podemos manter esse retorno em passos apenas para sabermos se é None ou não.)
+    """
     queue = deque()
     visited = set()
     queue.append((start[0], start[1], 0))
@@ -69,7 +74,7 @@ def bfs_distance(maze, start, end, b_count, jump_count):
     while queue:
         x, y, d = queue.popleft()
         if (x, y) == end:
-            return d
+            return d  # encontrou caminho
         for dx, dy in [(-1,0), (1,0), (0,-1), (0,1)]:
             nx, ny = x + dx, y + dy
             if 0 <= nx < COLS and 0 <= ny < ROWS and (nx, ny) not in visited:
@@ -77,7 +82,7 @@ def bfs_distance(maze, start, end, b_count, jump_count):
                 if is_traversable(cell, b_count, jump_count):
                     visited.add((nx, ny))
                     queue.append((nx, ny, d+1))
-    return None
+    return None  # sem caminho
 
 def find_destination(maze):
     for row in range(ROWS):
@@ -133,56 +138,68 @@ def main():
     while True:
         dt = clock.tick(60) / 1000
 
+        # Se o slow estiver ativo, reduz o dt
         if time_slow_active:
             dt *= 0.5
             if pygame.time.get_ticks() / 1000 >= time_slow_end:
                 time_slow_active = False
 
+        # Eventos de sair
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit()
                 sys.exit()
-            if event.type == pygame.KEYDOWN and not moving and not game_over and not win:
-                dx, dy = 0, 0
-                if event.key == pygame.K_UP:
-                    dx, dy = 0, -1
-                elif event.key == pygame.K_DOWN:
-                    dx, dy = 0, 1
-                elif event.key == pygame.K_LEFT:
-                    dx, dy = -1, 0
-                elif event.key == pygame.K_RIGHT:
-                    dx, dy = 1, 0
 
-                if dx != 0 or dy != 0:
-                    new_x = player_grid[0] + dx
-                    new_y = player_grid[1] + dy
-                    if 0 <= new_x < COLS and 0 <= new_y < ROWS:
-                        cell = maze[new_y][new_x]
-                        if cell in (0, 8, 3, 4, 5, 7):
-                            target_grid = [new_x, new_y]
-                            moving = True
-                        elif cell == 2:
-                            if b_count > 0:
-                                target_grid = [new_x, new_y]
+        # (MUDANÇA 1) -------------------------------------------
+        # Agora, checamos continuamente as teclas pressionadas.
+        if not moving and not game_over and not win:
+            keys = pygame.key.get_pressed()
+            dx, dy = 0, 0
+            if keys[pygame.K_UP]:
+                dx, dy = 0, -1
+            elif keys[pygame.K_DOWN]:
+                dx, dy = 0, 1
+            elif keys[pygame.K_LEFT]:
+                dx, dy = -1, 0
+            elif keys[pygame.K_RIGHT]:
+                dx, dy = 1, 0
+
+            if dx != 0 or dy != 0:
+                new_x = player_grid[0] + dx
+                new_y = player_grid[1] + dy
+                if 0 <= new_x < COLS and 0 <= new_y < ROWS:
+                    cell = maze[new_y][new_x]
+                    # Checa se pode andar normalmente
+                    if cell in (0, 8, 3, 4, 5, 7):
+                        target_grid = [new_x, new_y]
+                        moving = True
+                    elif cell == 2 and b_count > 0:
+                        target_grid = [new_x, new_y]
+                        moving = True
+                        b_count -= 1
+                    elif cell == 1:
+                        # Verifica salto (pular 2 células)
+                        jump_x = player_grid[0] + 2 * dx
+                        jump_y = player_grid[1] + 2 * dy
+                        if jump_count > 0 and 0 <= jump_x < COLS and 0 <= jump_y < ROWS:
+                            landing_cell = maze[jump_y][jump_x]
+                            if landing_cell in (0, 8, 3, 4, 5, 7):
+                                target_grid = [jump_x, jump_y]
                                 moving = True
+                                jump_count -= 1
+                            elif landing_cell == 2 and b_count > 0:
+                                target_grid = [jump_x, jump_y]
+                                moving = True
+                                jump_count -= 1
                                 b_count -= 1
-                        elif cell == 1:
-                            jump_x = player_grid[0] + 2 * dx
-                            jump_y = player_grid[1] + 2 * dy
-                            if jump_count > 0 and 0 <= jump_x < COLS and 0 <= jump_y < ROWS:
-                                landing_cell = maze[jump_y][jump_x]
-                                if landing_cell in (0, 8, 3, 4, 5, 7) or (landing_cell == 2 and b_count > 0):
-                                    target_grid = [jump_x, jump_y]
-                                    moving = True
-                                    jump_count -= 1
+        # (FIM da MUDANÇA 1) ------------------------------------
 
-        # Atualiza a posição do jogador de forma suave
+        # Movimentação suave
         target_pixel = (target_grid[0] * TILE_SIZE, target_grid[1] * TILE_SIZE)
         if moving:
             dx = target_pixel[0] - player_pos[0]
             dy = target_pixel[1] - player_pos[1]
             distance = math.hypot(dx, dy)
-            # Verifica se já chegou (ou está muito próximo do destino)
             if distance < 1e-5:
                 player_pos[0], player_pos[1] = target_pixel
                 player_grid = list(target_grid)
@@ -206,6 +223,7 @@ def main():
                     player_pos[0] += dx / distance * move_dist
                     player_pos[1] += dy / distance * move_dist
                 else:
+                    # Chegou ao destino
                     player_pos[0], player_pos[1] = target_pixel
                     player_grid = list(target_grid)
                     moving = False
@@ -223,13 +241,26 @@ def main():
                     elif current_cell == 7:
                         win = True
 
+        # Atualiza tempo
         if not game_over and not win:
             remaining_time -= dt
             if remaining_time <= 0:
                 game_over = True
 
-        distance = bfs_distance(maze, (player_grid[0], player_grid[1]), destination, b_count, jump_count)
+        # (MUDANÇA 2) -------------------------------------------
+        # Em vez de exibir a distância em passos do BFS,
+        # usamos o BFS somente para verificar se *existe* caminho (ou não).
+        path_dist = bfs_distance(maze, (player_grid[0], player_grid[1]), destination, b_count, jump_count)
+        if path_dist is not None:
+            # Calcula distância euclidiana
+            dist_x = destination[0] - player_grid[0]
+            dist_y = destination[1] - player_grid[1]
+            euclidian_dist = math.hypot(dist_x, dist_y)
+        else:
+            euclidian_dist = None
+        # (FIM da MUDANÇA 2) ------------------------------------
 
+        # Desenha o labirinto
         world_surface.fill((0, 0, 0))
         for row in range(ROWS):
             for col in range(COLS):
@@ -240,18 +271,18 @@ def main():
                 elif cell == 2:
                     pygame.draw.rect(world_surface, COLOR_OBSTACLE, rect)
                 elif cell == 3:
-                    left_rect = pygame.Rect(col * TILE_SIZE, row * TILE_SIZE, TILE_SIZE//2, TILE_SIZE)
-                    right_rect = pygame.Rect(col * TILE_SIZE + TILE_SIZE//2, row * TILE_SIZE, TILE_SIZE - TILE_SIZE//2, TILE_SIZE)
+                    left_rect = pygame.Rect(col*TILE_SIZE, row*TILE_SIZE, TILE_SIZE//2, TILE_SIZE)
+                    right_rect = pygame.Rect(col*TILE_SIZE + TILE_SIZE//2, row*TILE_SIZE, TILE_SIZE - TILE_SIZE//2, TILE_SIZE)
                     pygame.draw.rect(world_surface, COLOR_PU_A_1, left_rect)
                     pygame.draw.rect(world_surface, COLOR_PU_A_2, right_rect)
                 elif cell == 4:
-                    left_rect = pygame.Rect(col * TILE_SIZE, row * TILE_SIZE, TILE_SIZE//2, TILE_SIZE)
-                    right_rect = pygame.Rect(col * TILE_SIZE + TILE_SIZE//2, row * TILE_SIZE, TILE_SIZE - TILE_SIZE//2, TILE_SIZE)
+                    left_rect = pygame.Rect(col*TILE_SIZE, row*TILE_SIZE, TILE_SIZE//2, TILE_SIZE)
+                    right_rect = pygame.Rect(col*TILE_SIZE + TILE_SIZE//2, row*TILE_SIZE, TILE_SIZE - TILE_SIZE//2, TILE_SIZE)
                     pygame.draw.rect(world_surface, COLOR_PU_B_1, left_rect)
                     pygame.draw.rect(world_surface, COLOR_PU_B_2, right_rect)
                 elif cell == 5:
-                    left_rect = pygame.Rect(col * TILE_SIZE, row * TILE_SIZE, TILE_SIZE//2, TILE_SIZE)
-                    right_rect = pygame.Rect(col * TILE_SIZE + TILE_SIZE//2, row * TILE_SIZE, TILE_SIZE - TILE_SIZE//2, TILE_SIZE)
+                    left_rect = pygame.Rect(col*TILE_SIZE, row*TILE_SIZE, TILE_SIZE//2, TILE_SIZE)
+                    right_rect = pygame.Rect(col*TILE_SIZE + TILE_SIZE//2, row*TILE_SIZE, TILE_SIZE - TILE_SIZE//2, TILE_SIZE)
                     pygame.draw.rect(world_surface, COLOR_PU_C_1, left_rect)
                     pygame.draw.rect(world_surface, COLOR_PU_C_2, right_rect)
                 elif cell == 7:
@@ -262,9 +293,11 @@ def main():
                     pygame.draw.rect(world_surface, COLOR_FREE, rect)
                 pygame.draw.rect(world_surface, (0, 0, 0), rect, 1)
 
+        # Desenha o jogador (um círculo amarelo)
         player_rect = pygame.Rect(player_pos[0], player_pos[1], TILE_SIZE, TILE_SIZE)
         pygame.draw.ellipse(world_surface, (255, 255, 0), player_rect)
 
+        # Ajusta câmera
         view_w = SCREEN_WIDTH // ZOOM
         view_h = SCREEN_HEIGHT // ZOOM
         player_center = (player_pos[0] + TILE_SIZE // 2, player_pos[1] + TILE_SIZE // 2)
@@ -275,13 +308,20 @@ def main():
         scaled_surface = pygame.transform.scale(camera_surface, (SCREEN_WIDTH, SCREEN_HEIGHT))
         screen.blit(scaled_surface, (0, 0))
 
-        hud_rect = pygame.Rect(5, 5, 220, 70)
+        # HUD
+        hud_rect = pygame.Rect(5, 5, 240, 70)
         pygame.draw.rect(screen, (255, 255, 255), hud_rect)
         timer_color = (255, 165, 0) if time_slow_active else (0, 0, 0)
         timer_text = font.render(f"Tempo: {int(remaining_time)}", True, timer_color)
         screen.blit(timer_text, (10, 10))
-        distance_text = font.render(f"Distância: {distance if distance is not None else 'N/A'}", True, (0, 0, 0))
+
+        # (MUDANÇA 2) Exibindo a distância euclidiana ou N/A
+        if euclidian_dist is not None:
+            distance_text = font.render(f"Distância: {euclidian_dist:.2f}", True, (0, 0, 0))
+        else:
+            distance_text = font.render("Distância: N/A", True, (0, 0, 0))
         screen.blit(distance_text, (10, 30))
+
         powerup_text = font.render(f"Power-ups: B={b_count} | C={jump_count} | Slow={'Ativo' if time_slow_active else 'Off'}", True, (0, 0, 0))
         screen.blit(powerup_text, (10, 50))
 
@@ -293,6 +333,7 @@ def main():
             screen.blit(win_text, (SCREEN_WIDTH // 2 - 120, SCREEN_HEIGHT // 2))
 
         pygame.display.flip()
+
 
 if __name__ == "__main__":
     main()
