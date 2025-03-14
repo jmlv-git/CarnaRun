@@ -41,6 +41,10 @@ class Player(pygame.sprite.Sprite):
     def collision(self, direction):
         for sprite in self.collision_sprites:
             if sprite.rect.colliderect(self.hitbox_rect):
+                print(sprite.name)
+                if sprite.name == 'pula_parede':
+                    print("parede especial")
+                    sprite.kill()
                 if direction == 'horizontal':
                     if self.direction.x > 0: self.hitbox_rect.right = sprite.rect.left
                     if self.direction.x < 0: self.hitbox_rect.left = sprite.rect.right
