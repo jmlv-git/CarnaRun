@@ -1,4 +1,5 @@
 from settings import * 
+import time
 
 class Player(pygame.sprite.Sprite):
     def __init__(self, pos, groups, collision_sprites):
@@ -8,6 +9,9 @@ class Player(pygame.sprite.Sprite):
         self.image = pygame.image.load(join('..','images', 'player', 'down', '0.png')).convert_alpha()
         self.rect = self.image.get_rect(center = pos)
         self.hitbox_rect = self.rect.inflate(-60, -90)
+        self.can_cut = False
+        self.jump_wall = False
+        self.jump_wall_time = 0
     
         # movement 
         self.direction = pygame.Vector2()
@@ -38,13 +42,25 @@ class Player(pygame.sprite.Sprite):
         self.collision('vertical')
         self.rect.center = self.hitbox_rect.center
 
+    def checkSpecialCollision(self, sprite):
+        if sprite.name == 'corta_arvore':
+                self.can_cut = True
+                sprite.kill()
+        if sprite.name == 'pula_parede':
+                self.jump_wall = True
+                self.jump_wall_time = time.time() + 3
+                sprite.kill()
+        if sprite.name == 'fat_tree' and self.can_cut:
+                sprite.kill()
+                self.can_cut = False
+
     def collision(self, direction):
         for sprite in self.collision_sprites:
             if sprite.rect.colliderect(self.hitbox_rect):
-                print(sprite.name)
-                if sprite.name == 'pula_parede':
-                    print("parede especial")
-                    sprite.kill()
+                self.checkSpecialCollision(sprite)
+                if(time.time() - self.jump_wall_time < 0):
+                    self.jump_wall = False
+                    return
                 if direction == 'horizontal':
                     if self.direction.x > 0: self.hitbox_rect.right = sprite.rect.left
                     if self.direction.x < 0: self.hitbox_rect.left = sprite.rect.right
