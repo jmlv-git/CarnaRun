@@ -1,13 +1,15 @@
+import os
 from settings import * 
 import time
 
 class Player(pygame.sprite.Sprite):
     def __init__(self, pos, groups, collision_sprites):
         super().__init__(groups)
+        self.base_path = os.path.dirname(os.path.abspath(__file__))  # Base path do arquivo atual
         self.load_images()
         self.state, self.frame_index = 'right', 0
-        self.image = pygame.image.load(join('..','images', 'player', 'down', '0.png')).convert_alpha()
-        self.rect = self.image.get_rect(center = pos)
+        self.image = pygame.image.load(os.path.join(self.base_path, '..', 'images', 'player', 'down', '0.png')).convert_alpha()
+        self.rect = self.image.get_rect(center=pos)
         self.hitbox_rect = self.rect.inflate(-60, -90)
         self.can_cut = False
         self.jump_wall = False
@@ -22,10 +24,11 @@ class Player(pygame.sprite.Sprite):
         self.frames = {'left': [], 'right': [], 'up': [], 'down': []}
 
         for state in self.frames.keys():
-            for folder_path, sub_folders, file_names in walk(join('..','images', 'player', state)):
+            state_path = os.path.join(self.base_path, '..', 'images', 'player', state)
+            for folder_path, sub_folders, file_names in os.walk(state_path):
                 if file_names:
-                    for file_name in sorted(file_names, key= lambda name: int(name.split('.')[0])):
-                        full_path = join(folder_path, file_name)
+                    for file_name in sorted(file_names, key=lambda name: int(name.split('.')[0])):
+                        full_path = os.path.join(folder_path, file_name)
                         surf = pygame.image.load(full_path).convert_alpha()
                         self.frames[state].append(surf)
 
@@ -44,21 +47,21 @@ class Player(pygame.sprite.Sprite):
 
     def checkSpecialCollision(self, sprite):
         if sprite.name == 'corta_arvore':
-                self.can_cut = True
-                sprite.kill()
+            self.can_cut = True
+            sprite.kill()
         if sprite.name == 'pula_parede':
-                self.jump_wall = True
-                self.jump_wall_time = time.time() + 3
-                sprite.kill()
+            self.jump_wall = True
+            self.jump_wall_time = time.time() + 3
+            sprite.kill()
         if sprite.name == 'fat_tree' and self.can_cut:
-                sprite.kill()
-                self.can_cut = False
+            sprite.kill()
+            self.can_cut = False
 
     def collision(self, direction):
         for sprite in self.collision_sprites:
             if sprite.rect.colliderect(self.hitbox_rect):
                 self.checkSpecialCollision(sprite)
-                if(time.time() - self.jump_wall_time < 0):
+                if time.time() - self.jump_wall_time < 0:
                     self.jump_wall = False
                     return
                 if direction == 'horizontal':
