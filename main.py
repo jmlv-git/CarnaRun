@@ -49,9 +49,34 @@ maze = [
 
 ROWS = len(maze)
 COLS = len(maze[0])
-TILE_SIZE = 40
+TILE_SIZE = 32
 WIDTH = COLS * TILE_SIZE
 HEIGHT = ROWS * TILE_SIZE
+
+# Carregar a sprite sheet
+pygame.display.set_mode()
+sprite_sheet = pygame.image.load("imagens/player_spritesheet.png").convert_alpha()
+
+# Definir o tamanho de cada frame
+frame_width =  TILE_SIZE  # ou outro valor, se diferente
+frame_height =  TILE_SIZE
+
+# Número de frames na horizontal (ajuste conforme sua sprite sheet)
+num_frames = 4
+
+# Extrair os frames da sprite sheet
+player_frames = []
+for i in range(num_frames):
+    # Define a área do frame atual na sprite sheet
+    frame_rect = pygame.Rect(i * frame_width, 0, frame_width, frame_height)
+    frame = sprite_sheet.subsurface(frame_rect)
+    frame = pygame.transform.scale(frame, (TILE_SIZE, TILE_SIZE))
+    player_frames.append(frame)
+
+# Variáveis de controle da animação
+current_frame = 0
+animation_timer = 0
+animation_delay = 0.1  # segundos entre frames
 
 # ---------------------------------------------------------------
 # Funções de apoio
@@ -145,7 +170,7 @@ def main():
     # Ajustar tamanho das imagens para o tamanho da célula
     floor_img = pygame.transform.scale(floor_img, (TILE_SIZE, TILE_SIZE))
     wall_img = pygame.transform.scale(wall_img, (TILE_SIZE, TILE_SIZE))
-    #obstacle_img = pygame.transform.scale(obstacle_img, (TILE_SIZE, TILE_SIZE))
+    obstacle_img = pygame.transform.scale(obstacle_img, (TILE_SIZE, TILE_SIZE))
     powerup_a_img = pygame.transform.scale(powerup_a_img, (TILE_SIZE, TILE_SIZE))
     powerup_b_img = pygame.transform.scale(powerup_b_img, (TILE_SIZE, TILE_SIZE))
     powerup_c_img = pygame.transform.scale(powerup_c_img, (TILE_SIZE, TILE_SIZE))
@@ -232,6 +257,8 @@ def main():
     font = pygame.font.SysFont(None, 24)
     SPEED = 200
 
+    animation_timer = 0
+
     # Loop principal
     while True:
         # "real_dt" é o tempo real entre frames (usado na física e no movimento)
@@ -241,6 +268,14 @@ def main():
         # "timer_dt"    => usado na contagem regressiva (pode sofrer slow)
         movement_dt = real_dt
         timer_dt = real_dt
+
+        if moving:
+            animation_timer += movement_dt
+            if animation_timer >= animation_delay:
+                animation_timer = 0
+                current_frame = (current_frame + 1) % len(player_frames)
+        else:
+            current_frame = 0
 
         # Verifica se o slow está ativo e se já acabou
         if time_slow_active:
@@ -515,7 +550,8 @@ def main():
                 # pygame.draw.rect(world_surface, (0, 0, 0), (x, y, TILE_SIZE, TILE_SIZE), 1)
 
         # Desenha o jogador (imagem em vez de círculo)
-        world_surface.blit(player_img, (player_pos[0], player_pos[1]))
+        #world_surface.blit(player_img, (player_pos[0], player_pos[1]))
+        world_surface.blit(player_frames[current_frame], (player_pos[0], player_pos[1]))
 
         #Desenha o obstáculo
         for obstaculo in obstaculo_din_pos_px:
@@ -525,7 +561,7 @@ def main():
         #Desenha o obstáculo fixos
         for obstaculo in obstaculo_fix_pos_px:
             x, y = obstaculo
-            world_surface.blit(player_img, (x, y))  # Desenha a imagem do obstáculo
+            world_surface.blit(obstacle_img, (x, y))  # Desenha a imagem do obstáculo
 
 
         
