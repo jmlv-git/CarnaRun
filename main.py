@@ -89,7 +89,18 @@ player_frames = {
     "right": extract_frames(sprite_sheet_right)
 }
 
+# Carregar as spritesheets para a versão com poder B
+sprite_sheet_down_B = pygame.image.load("imagens/player_spritesheet_down_B.png").convert_alpha()
+sprite_sheet_up_B = pygame.image.load("imagens/player_spritesheet_up_B.png").convert_alpha()
+sprite_sheet_left_B = pygame.image.load("imagens/player_spritesheet_left_B.png").convert_alpha()
+sprite_sheet_right_B = pygame.image.load("imagens/player_spritesheet_right_B.png").convert_alpha()
 
+player_frames_B = {
+    "down": extract_frames(sprite_sheet_down_B),
+    "up": extract_frames(sprite_sheet_up_B),
+    "left": extract_frames(sprite_sheet_left_B),
+    "right": extract_frames(sprite_sheet_right_B)
+}
 
 # Variáveis de controle da animação
 current_frame = 0
@@ -573,7 +584,12 @@ def main():
         #world_surface.blit(player_img, (player_pos[0], player_pos[1]))
         #world_surface.blit(player_frames[current_frame], (player_pos[0], player_pos[1]))
         # Desenha o jogador com o frame da direção atual
-        world_surface.blit(player_frames[player_direction][current_frame], (player_pos[0], player_pos[1]))
+        if b_count > 0:
+            frames_to_use = player_frames_B[player_direction]
+        else:
+            frames_to_use = player_frames[player_direction]
+            
+        world_surface.blit(frames_to_use[current_frame], (player_pos[0], player_pos[1]))
 
 
         #Desenha o obstáculo
