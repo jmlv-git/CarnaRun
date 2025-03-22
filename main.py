@@ -190,6 +190,14 @@ def main():
     dest_img = pygame.image.load("imagens/destination.png").convert_alpha()
     start_img = pygame.image.load("imagens/start.png").convert_alpha()
 
+    # Imagem de fundo da HUD
+    hud_background = pygame.image.load("imagens/hud_background.png").convert_alpha()
+    # Se necessário, ajuste o tamanho da imagem:
+    hud_background = pygame.transform.scale(hud_background, (120, 70))
+    # Fonte para o texto da HUD
+    font = pygame.font.SysFont(None, 24, bold=True)
+
+
     # Sprite do jogador (opcional)
     player_img = pygame.image.load("imagens/player.png").convert_alpha()
 
@@ -623,27 +631,27 @@ def main():
         # ---------------------------------------------------------------------
         # HUD
         # ---------------------------------------------------------------------
-        hud_rect = pygame.Rect(5, 5, 240, 70)
-        pygame.draw.rect(screen, (255, 255, 255), hud_rect)
+        #hud_rect = pygame.Rect(5, 5, 240, 70)
+        #pygame.draw.rect(screen, (255, 255, 255), hud_rect)
 
         # Mostra o tempo
-        timer_color = (255, 165, 0) if time_slow_active else (0, 0, 0)
-        timer_text = font.render(f"Tempo: {int(remaining_time)}", True, timer_color)
-        screen.blit(timer_text, (10, 10))
+        #timer_color = (255, 165, 0) if time_slow_active else (0, 0, 0)
+        #timer_text = font.render(f"Tempo: {int(remaining_time)}", True, timer_color)
+        #screen.blit(timer_text, (10, 10))
 
         # Mostra a distância até o destino
-        if euclidian_dist is not None:
-            distance_text = font.render(f"Distância: {euclidian_dist:.2f}", True, (0, 0, 0))
-        else:
-            distance_text = font.render("Distância: N/A", True, (0, 0, 0))
-        screen.blit(distance_text, (10, 30))
+        #if euclidian_dist is not None:
+            #distance_text = font.render(f"Distância: {euclidian_dist:.2f}", True, (0, 0, 0))
+        #else:
+            #distance_text = font.render("Distância: N/A", True, (0, 0, 0))
+        #screen.blit(distance_text, (10, 30))
 
         # Status dos power-ups
-        powerup_text = font.render(
-            f"Power-ups: B={b_count} | C={jump_count} | Slow={'Ativo' if time_slow_active else 'Off'}",
-            True, (0, 0, 0)
-        )
-        screen.blit(powerup_text, (10, 50))
+        # powerup_text = font.render(
+        #     f"Power-ups: B={b_count} | C={jump_count} | Slow={'Ativo' if time_slow_active else 'Off'}",
+        #     True, (0, 0, 0)
+        # )
+        # screen.blit(powerup_text, (10, 50))
 
         # Mensagens de fim de jogo
         if game_over:
@@ -653,6 +661,20 @@ def main():
             win_text = font.render("Parabéns! Você chegou ao destino!", True, (0, 255, 0))
             screen.blit(win_text, (SCREEN_WIDTH // 2 - 120, SCREEN_HEIGHT // 2))
 
+        # Define a posição onde a HUD deve aparecer na tela (por exemplo, no topo central)
+        hud_rect = hud_background.get_rect()
+        hud_rect.center = (SCREEN_WIDTH // 2, 40)  # 40 pode ser ajustado conforme necessário
+
+        # Renderiza o texto do tempo em branco e com a fonte em negrito
+        time_text = font.render(f"{int(remaining_time)}", True, (255, 255, 255))
+
+        # Centraliza o texto na imagem do hud
+        text_rect = time_text.get_rect(center=hud_background.get_rect().center)
+
+        # Desenha a imagem do HUD na tela
+        screen.blit(hud_background, hud_rect)
+        # Desenha o texto do tempo em cima da imagem; ajuste a posição com base em hud_rect
+        screen.blit(time_text, (hud_rect.left + text_rect.left, hud_rect.top + text_rect.top))
         pygame.display.flip()
 
 if __name__ == "__main__":
