@@ -359,28 +359,37 @@ def main():
                 new_x_obstaculo = pos_grid_x_obstaculo + dx
                 new_y_obstaculo = pos_grid_y_obstaculo + dy
                 celll_obstaculo = maze[new_y_obstaculo][new_x_obstaculo]
-                
-                if new_x_obstaculo == player_grid[0] and new_y_obstaculo == player_grid[1]:
-                    obstaculos_din_grid[index][4] = False
-                    obstaculo_din_target_grid[index] = list(obstaculos_din_grid[index])
-                elif celll_obstaculo == 1:
-                    if (dx == 0 and dy == -1):  #UP
-                        dy = 1 # Se tava indo pra cima, vai para baixo
-                        obstaculo_din_target_grid[index][3] = dy
-                    elif (dx == 0 and dy == 1): #DOWN
-                        dy = -1 # Se tava indo pra baixo, vai para cima
-                        obstaculo_din_target_grid[index][3] = dy
-                    elif dx == -1 and dy == 0:  #LEFT
-                        dx = 1 # Se tava indo pra esquerda, vai para direita
-                        obstaculo_din_target_grid[index][2] = dx
-                    elif dx == 1 and dy == 0:   #RIGHT
-                        dx = -1 # Se tava indo pra direita, vai para esquerda
-                        obstaculo_din_target_grid[index][2] = dx
-                else:
 
-                    #Posição alvo do obstaculo no grid
-                    obstaculo_din_target_grid[index][0] = new_x_obstaculo
-                    obstaculo_din_target_grid[index][1] = new_y_obstaculo
+                # Veiricação de colisão entre obstáculos
+                for i in range(len(obstaculos_din_grid)):
+                    if new_x_obstaculo == obstaculo_din_target_grid[i][0] and new_y_obstaculo == obstaculo_din_target_grid[i][1]:
+                        obstaculos_din_grid[index][4] = False
+                        obstaculo_din_target_grid[index] = list(obstaculos_din_grid[index])
+
+                if not obstaculos_din_grid[index][4] == False: # Coloquei essa condição por causa da Veiricação de colisão entre obstáculos
+
+                    if new_x_obstaculo == player_grid[0] and new_y_obstaculo == player_grid[1]:
+                        print("entra ?")
+                        obstaculos_din_grid[index][4] = False
+                        obstaculo_din_target_grid[index] = list(obstaculos_din_grid[index])
+                    elif celll_obstaculo == 1:
+                        if (dx == 0 and dy == -1):  #UP
+                            dy = 1 # Se tava indo pra cima, vai para baixo
+                            obstaculo_din_target_grid[index][3] = dy
+                        elif (dx == 0 and dy == 1): #DOWN
+                            dy = -1 # Se tava indo pra baixo, vai para cima
+                            obstaculo_din_target_grid[index][3] = dy
+                        elif dx == -1 and dy == 0:  #LEFT
+                            dx = 1 # Se tava indo pra esquerda, vai para direita
+                            obstaculo_din_target_grid[index][2] = dx
+                        elif dx == 1 and dy == 0:   #RIGHT
+                            dx = -1 # Se tava indo pra direita, vai para esquerda
+                            obstaculo_din_target_grid[index][2] = dx
+                    else:
+
+                        #Posição alvo do obstaculo no grid
+                        obstaculo_din_target_grid[index][0] = new_x_obstaculo
+                        obstaculo_din_target_grid[index][1] = new_y_obstaculo
                     
 
         # ---------------------------------------------------------------------
@@ -437,6 +446,22 @@ def main():
                                 obstaculos_din_grid[index_obstaculo][4] = False
                                 obstaculo_din_target_grid[index_obstaculo] = list(obstaculos_din_grid[index_obstaculo])
                                 moving == False
+                        else:
+                            if (obstaculo_din_target_grid[index_obstaculo][0] == 2):
+                                x = 10
+                                print("Novo bug Jam")
+                                print("Posição Atual Jogador")
+                                print(player_grid)
+                                print("Posição Target Jogador")
+                                var_1 = [new_x,new_y]
+                                print(var_1)
+                                print("Posição Atual Obstaculos")
+                                print(obstaculos_din_grid[index_obstaculo])
+                                print("Posição Target Obstaculos")
+                                print(obstaculo_din_target_grid[index_obstaculo])
+                                
+
+
 
                             
                     cell = maze[new_y][new_x]
