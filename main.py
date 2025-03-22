@@ -48,12 +48,28 @@ maze = [
 ]
 
 pygame.init()
+pygame.mixer.init()  # Inicializa o mixer, se ainda não estiver iniciado
+
+# Carrega os efeitos sonoros (substitua os caminhos pelos arquivos corretos)
+pickup_sound = pygame.mixer.Sound("sons/pickup_sound.wav")
+use_sound = pygame.mixer.Sound("sons/use_sound.wav")
+game_over_sound = pygame.mixer.Sound("sons/game_over.mp3")
+win_sound = pygame.mixer.Sound("sons/win_sound.wav")
+
 pygame.mixer.music.load("sons/main_music.mp3")
 pygame.mixer.music.play(-1)  # -1 para repetir indefinidamente
 
 SCREEN_WIDTH = 600
 SCREEN_HEIGHT = 520
 screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
+
+# Carrega as imagens para as mensagens de vitória e derrota
+win_image = pygame.image.load("imagens/win_image.png").convert_alpha()
+game_over_image = pygame.image.load("imagens/game_over_image.png").convert_alpha()
+
+# Opcional: Redimensione as imagens para o tamanho desejado
+win_image = pygame.transform.scale(win_image, (300, 200))
+game_over_image = pygame.transform.scale(game_over_image, (300, 200))
 
 # Variável global inicial para direção
 player_direction = "down"  # valor padrão
@@ -168,7 +184,9 @@ def clamp_camera(camera_rect, world_width, world_height):
         camera_rect.bottom = world_height
     return camera_rect
 
-
+# Variáveis de controle, defina-as antes do loop principal
+sound_game_over_played = False
+sound_win_played = False
 
 # ---------------------------------------------------------------
 # Função principal (main)
@@ -282,7 +300,7 @@ def main():
     time_slow_end = 0
 
     # Tempo total e estado do jogo
-    total_time = 120
+    total_time = 20
     remaining_time = total_time
     game_over = False
     win = False
@@ -406,6 +424,7 @@ def main():
                         target_grid = [new_x, new_y]
                         moving = True
                         b_count -= 1
+                        use_sound.play()  # Toca o som ao usar o power-up
                     # Parede (1) => tentar salto (2 células) se tiver C disponível
                     elif cell == 1:
                         jump_x = player_grid[0] + 2 * dx
@@ -417,11 +436,13 @@ def main():
                                 target_grid = [jump_x, jump_y]
                                 moving = True
                                 jump_count -= 1
+                                use_sound.play()  # Toca o som ao usar o power-up
                             elif landing_cell == 2 and b_count > 0:
                                 target_grid = [jump_x, jump_y]
                                 moving = True
                                 jump_count -= 1
                                 b_count -= 1
+                                use_sound.play()  # Toca o som ao usar o power-up
 
         # Movimentação dos obstáculos dinâmicos - pixel
         for index in range(len(obstaculo_din_target_grid)):
@@ -509,12 +530,15 @@ def main():
                         time_slow_active = True
                         time_slow_end = pygame.time.get_ticks() / 1000.0 + 10
                         maze[player_grid[1]][player_grid[0]] = 0
+                        pickup_sound.play()
                     elif current_cell == 4:
                         b_count += 1
                         maze[player_grid[1]][player_grid[0]] = 0
+                        pickup_sound.play()
                     elif current_cell == 5:
                         jump_count += 1
                         maze[player_grid[1]][player_grid[0]] = 0
+                        pickup_sound.play()
                     elif current_cell == 7:
                         win = True
 
@@ -662,14 +686,25 @@ def main():
         #     True, (0, 0, 0)
         # )
         # screen.blit(powerup_text, (10, 50))
-
+        global sound_game_over_played
+        global sound_win_played
         # Mensagens de fim de jogo
         if game_over:
-            over_text = font.render("Tempo esgotado! Você perdeu!", True, (255, 0, 0))
-            screen.blit(over_text, (SCREEN_WIDTH // 2 - 100, SCREEN_HEIGHT // 2))
+            # Centraliza a imagem de game over na tela
+            game_over_rect = game_over_image.get_rect(center=(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2))
+            screen.blit(game_over_image, game_over_rect)
+            pygame.mixer.music.stop()
+            if not sound_game_over_played:
+                game_over_sound.play()
+                sound_game_over_played = True
         if win:
-            win_text = font.render("Parabéns! Você chegou ao destino!", True, (0, 255, 0))
-            screen.blit(win_text, (SCREEN_WIDTH // 2 - 120, SCREEN_HEIGHT // 2))
+            # Centraliza a imagem de vitória na tela
+            win_rect = win_image.get_rect(center=(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2))
+            screen.blit(win_image, win_rect)
+            pygame.mixer.music.stop()
+            if not sound_win_played:
+                win_sound.play()
+                sound_win_played = True
 
         # Define a posição onde a HUD deve aparecer na tela (por exemplo, no topo central)
         hud_rect = hud_background.get_rect()
