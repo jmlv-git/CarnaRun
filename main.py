@@ -48,6 +48,9 @@ maze = [
 ]
 
 pygame.init()
+pygame.mixer.music.load("sons/main_music.mp3")
+pygame.mixer.music.play(-1)  # -1 para repetir indefinidamente
+
 SCREEN_WIDTH = 600
 SCREEN_HEIGHT = 520
 screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
@@ -568,6 +571,13 @@ def main():
             euclidian_dist = math.hypot(dist_x, dist_y)
         else:
             euclidian_dist = None
+
+        # Atualiza o volume da música com base na distância
+        if euclidian_dist is not None:
+            max_distance = math.hypot(COLS - 1, ROWS - 1)
+            volume = (max_distance - euclidian_dist) / max_distance
+            volume = max(0.0, min(1.0, volume))
+            pygame.mixer.music.set_volume(volume)
 
         # ---------------------------------------------------------------------
         # Desenhar todo o labirinto na world_surface (com as imagens)
