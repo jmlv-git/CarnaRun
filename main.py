@@ -263,12 +263,9 @@ def main():
     obstaculos_din_grid = [
         [9, 1, 0, 1, moveu_obstaculo], 
         [6, 1, 0, 1, moveu_obstaculo],
-        [1, 9, 0, -1, moveu_obstaculo],
         [2, 9, 0, -1, moveu_obstaculo],
         [13, 4, -1, 0, moveu_obstaculo]
     ]
-
-    
 
     obstaculo_din_target_grid = list(obstaculos_din_grid)
 
@@ -276,8 +273,7 @@ def main():
         [obstaculos_din_grid[0][0] * TILE_SIZE, obstaculos_din_grid[0][1] * TILE_SIZE],
         [obstaculos_din_grid[1][0] * TILE_SIZE, obstaculos_din_grid[1][1] * TILE_SIZE],
         [obstaculos_din_grid[2][0] * TILE_SIZE, obstaculos_din_grid[2][1] * TILE_SIZE],
-        [obstaculos_din_grid[3][0] * TILE_SIZE, obstaculos_din_grid[3][1] * TILE_SIZE],
-        [obstaculos_din_grid[4][0] * TILE_SIZE, obstaculos_din_grid[4][1] * TILE_SIZE]
+        [obstaculos_din_grid[3][0] * TILE_SIZE, obstaculos_din_grid[3][1] * TILE_SIZE]
     ]
 
     # Estado de colisão
@@ -300,7 +296,7 @@ def main():
     time_slow_end = 0
 
     # Tempo total e estado do jogo
-    total_time = 20
+    total_time = 200
     remaining_time = total_time
     game_over = False
     win = False
@@ -348,7 +344,7 @@ def main():
             if event.type == pygame.QUIT:
                 pygame.quit()
                 sys.exit()
-            
+        
         # Movimentação dos obstáculos dinâmicos - grid
         for index, obstaculo in enumerate(obstaculos_din_grid):
             
@@ -364,8 +360,10 @@ def main():
                 new_y_obstaculo = pos_grid_y_obstaculo + dy
                 celll_obstaculo = maze[new_y_obstaculo][new_x_obstaculo]
                 
-                if celll_obstaculo == 1:
-
+                if new_x_obstaculo == player_grid[0] and new_y_obstaculo == player_grid[1]:
+                    obstaculos_din_grid[index][4] = False
+                    obstaculo_din_target_grid[index] = list(obstaculos_din_grid[index])
+                elif celll_obstaculo == 1:
                     if (dx == 0 and dy == -1):  #UP
                         dy = 1 # Se tava indo pra cima, vai para baixo
                         obstaculo_din_target_grid[index][3] = dy
@@ -409,24 +407,51 @@ def main():
                 new_x = player_grid[0] + dx
                 new_y = player_grid[1] + dy
                 if 0 <= new_x < COLS and 0 <= new_y < ROWS:
+                    for index_obstaculo in range(len(obstaculo_din_target_grid)):
+                        new_x_obstaculo = obstaculo_din_target_grid[index_obstaculo][0]
+                        new_y_obstaculo = obstaculo_din_target_grid[index_obstaculo][1]
+                        if (new_x == new_x_obstaculo and new_y == new_y_obstaculo):
+                            print("if 1")
+                            if b_count > 0:
+                                target_grid = [new_x, new_y]
+                                b_count -= 1
+                                use_sound.play()  # Toca o som ao usar o power-up
+                                moving = True
+                            else: # Joga o boneco para tras
+                                print("bug do if 1")
+                                new_x = player_grid[0]
+                                new_y = player_grid[1]
+                                target_grid = [new_x, new_y]
+                                moving == True
+                        elif (player_grid[0] == new_x_obstaculo and player_grid[1] == new_y_obstaculo):
+                            print("if 2")
+                            if b_count > 0:
+                                target_grid = [new_x, new_y]
+                                b_count -= 1
+                                use_sound.play()  # Toca o som ao usar o power-up
+                                moving = True
+                            else: # Joga o boneco para tras
+                                print("bug do if 2")
+                                new_x = player_grid[0]
+                                new_y = player_grid[1] 
+                                obstaculos_din_grid[index_obstaculo][4] = False
+                                obstaculo_din_target_grid[index_obstaculo] = list(obstaculos_din_grid[index_obstaculo])
+                                moving == False
+
+                            
                     cell = maze[new_y][new_x]
                     # Caminho livre, power-up ou destino
-                    if cell in (0, 8, 3, 4, 5, 7):
+                    if cell in (0, 8, 3, 4, 5, 7) and moving == False:
                         target_grid = [new_x, new_y]
-                        if collision == True:
-                            collision = False
-                            for index in list_collided_obstacle_index:
-                                maze[obstaculos_din_grid[index][1]][obstaculos_din_grid[index][0]] = 0
-                            list_collided_obstacle_index = []
                         moving = True
                     # Obstáculo transponível (2) com B disponível
-                    elif cell == 2 and b_count > 0:
+                    elif cell == 2 and b_count > 0 and moving == False:
                         target_grid = [new_x, new_y]
                         moving = True
                         b_count -= 1
                         use_sound.play()  # Toca o som ao usar o power-up
                     # Parede (1) => tentar salto (2 células) se tiver C disponível
-                    elif cell == 1:
+                    elif cell == 1 and moving == False:
                         jump_x = player_grid[0] + 2 * dx
                         jump_y = player_grid[1] + 2 * dy
                         if jump_count > 0 and 0 <= jump_x < COLS and 0 <= jump_y < ROWS:
@@ -443,41 +468,41 @@ def main():
                                 jump_count -= 1
                                 b_count -= 1
                                 use_sound.play()  # Toca o som ao usar o power-up
-
+                
         # Movimentação dos obstáculos dinâmicos - pixel
         for index in range(len(obstaculo_din_target_grid)):
 
-            if not (collision and index in list_collided_obstacle_index):
+            #if not (collision and index in list_collided_obstacle_index):
 
-                _, _, _, _, moveu = obstaculo_din_target_grid[index]
+            _, _, _, _, moveu = obstaculo_din_target_grid[index]
 
-                if moveu == True:
+            if moveu == True:
 
-                    # Calcular a distância até o destino
-                    obstaculo_target_px = (obstaculo_din_target_grid[index][0] * TILE_SIZE, obstaculo_din_target_grid[index][1] * TILE_SIZE)
-                    dx_obstaculo_px = obstaculo_target_px[0] - obstaculo_din_pos_px[index][0]
-                    dy_obstaculo_px = obstaculo_target_px[1] - obstaculo_din_pos_px[index][1]
-                    distance_obstaculo = math.hypot(dx_obstaculo_px, dy_obstaculo_px)
-                    
-                    # Movimentação suave
-                    # Distancia a percorrer = Velocidade (px/seg) * Intervalo de tempo (frame)
-                    move_obstaculo_dist = SPEED * movement_dt  
+                # Calcular a distância até o destino
+                obstaculo_target_px = (obstaculo_din_target_grid[index][0] * TILE_SIZE, obstaculo_din_target_grid[index][1] * TILE_SIZE)
+                dx_obstaculo_px = obstaculo_target_px[0] - obstaculo_din_pos_px[index][0]
+                dy_obstaculo_px = obstaculo_target_px[1] - obstaculo_din_pos_px[index][1]
+                distance_obstaculo = math.hypot(dx_obstaculo_px, dy_obstaculo_px)
+                
+                # Movimentação suave
+                # Distancia a percorrer = Velocidade (px/seg) * Intervalo de tempo (frame)
+                move_obstaculo_dist = SPEED * movement_dt  
 
-                    if distance_obstaculo < 1e-5:
-                        # Chegou ao destino em pixels
-                        obstaculo_din_pos_px[index][0],  obstaculo_din_pos_px[index][1] = obstaculo_target_px
-                        obstaculo_din_target_grid[index][4] = False
-                        obstaculos_din_grid[index] = list(obstaculo_din_target_grid[index])
+                if distance_obstaculo < 1e-5:
+                    # Chegou ao destino em pixels
+                    obstaculo_din_pos_px[index][0],  obstaculo_din_pos_px[index][1] = obstaculo_target_px
+                    obstaculo_din_target_grid[index][4] = False
+                    obstaculos_din_grid[index] = list(obstaculo_din_target_grid[index])
 
-                    # Ainda não chegou, avança gradualmente
-                    elif move_obstaculo_dist < distance_obstaculo:
-                        obstaculo_din_pos_px[index][0] += (dx_obstaculo_px / distance_obstaculo) * move_obstaculo_dist 
-                        obstaculo_din_pos_px[index][1] += (dy_obstaculo_px / distance_obstaculo) * move_obstaculo_dist
-                    # Consegue chegar neste frame
-                    else:
-                        obstaculo_din_pos_px[index][0],  obstaculo_din_pos_px[index][1] = obstaculo_target_px
-                        obstaculo_din_target_grid[index][4] = False
-                        obstaculos_din_grid[index] = list(obstaculo_din_target_grid[index])
+                # Ainda não chegou, avança gradualmente
+                elif move_obstaculo_dist < distance_obstaculo:
+                    obstaculo_din_pos_px[index][0] += (dx_obstaculo_px / distance_obstaculo) * move_obstaculo_dist 
+                    obstaculo_din_pos_px[index][1] += (dy_obstaculo_px / distance_obstaculo) * move_obstaculo_dist
+                # Consegue chegar neste frame
+                else:
+                    obstaculo_din_pos_px[index][0],  obstaculo_din_pos_px[index][1] = obstaculo_target_px
+                    obstaculo_din_target_grid[index][4] = False
+                    obstaculos_din_grid[index] = list(obstaculo_din_target_grid[index])
 
         # ---------------------------------------------------------------------
         # Movimentação suave (usando movement_dt)
@@ -542,38 +567,9 @@ def main():
                     elif current_cell == 7:
                         win = True
 
-        # Criar retângulo do jogador
-        player_rect = pygame.Rect(player_pos[0], player_pos[1], TILE_SIZE, TILE_SIZE)
-
-        # Criar retângulos para cada obstáculo dinâmico e verificar colisão
-        for index in range(len(obstaculo_din_pos_px)):
-
-            obstaculo_rect = pygame.Rect(
-                obstaculo_din_pos_px[index][0], 
-                obstaculo_din_pos_px[index][1], 
-                TILE_SIZE, TILE_SIZE
-            )
-            
-            if player_rect.colliderect(obstaculo_rect):
-                if not collision:
-                    print("Colisão detectada com obstáculo dinâmico!")
-                    collision = True
-                    collided_obstacle_index = index
-                    list_collided_obstacle_index.append(collided_obstacle_index)
-                    # Salva a posição do jogador no momento da colisão
-                    #saved_player_pos = player_pos.copy()
-                    # Salva a posição do obstáculo no momento da colisão
-                    saved_obstacle_pos = obstaculo_din_pos_px[index].copy()
-                    maze[obstaculos_din_grid[collided_obstacle_index][1]][obstaculos_din_grid[collided_obstacle_index][0]] = 2
         
-                else:
-                    if index not in list_collided_obstacle_index:
-                        list_collided_obstacle_index.append(index) # Colidiu com outro obstaculo.
-                        maze[obstaculos_din_grid[index][1]][obstaculos_din_grid[index][0]] = 2
-                    
-        # Se houver colisão, impede o movimento do obstáculo
-        if collision:
-            obstaculo_din_pos_px[collided_obstacle_index] = saved_obstacle_pos.copy()
+
+            
 
 
         # ---------------------------------------------------------------------
