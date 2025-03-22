@@ -47,31 +47,49 @@ maze = [
     [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]
 ]
 
+pygame.init()
+SCREEN_WIDTH = 600
+SCREEN_HEIGHT = 520
+screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
+
+# Variável global inicial para direção
+player_direction = "down"  # valor padrão
+
 ROWS = len(maze)
 COLS = len(maze[0])
-TILE_SIZE = 32
+TILE_SIZE = 16
 WIDTH = COLS * TILE_SIZE
 HEIGHT = ROWS * TILE_SIZE
 
-# Carregar a sprite sheet
-pygame.display.set_mode()
-sprite_sheet = pygame.image.load("imagens/player_spritesheet.png").convert_alpha()
+# Supondo que cada spritesheet possua o mesmo número de frames e tamanho
+num_frames = 3
+frame_width = TILE_SIZE
+frame_height = TILE_SIZE
 
-# Definir o tamanho de cada frame
-frame_width =  TILE_SIZE  # ou outro valor, se diferente
-frame_height =  TILE_SIZE
+def extract_frames(spritesheet):
+    frames = []
+    for i in range(num_frames):
+        frame_rect = pygame.Rect(i * frame_width, 0, frame_width, frame_height)
+        frame = spritesheet.subsurface(frame_rect)
+        frame = pygame.transform.scale(frame, (TILE_SIZE, TILE_SIZE))
+        frames.append(frame)
+    return frames
 
-# Número de frames na horizontal (ajuste conforme sua sprite sheet)
-num_frames = 4
+# Carregar as spritesheets para cada direção
+sprite_sheet_down = pygame.image.load("imagens/player_spritesheet_down.png").convert_alpha()
+sprite_sheet_up = pygame.image.load("imagens/player_spritesheet_up.png").convert_alpha()
+sprite_sheet_left = pygame.image.load("imagens/player_spritesheet_left.png").convert_alpha()
+sprite_sheet_right = pygame.image.load("imagens/player_spritesheet_right.png").convert_alpha()
 
-# Extrair os frames da sprite sheet
-player_frames = []
-for i in range(num_frames):
-    # Define a área do frame atual na sprite sheet
-    frame_rect = pygame.Rect(i * frame_width, 0, frame_width, frame_height)
-    frame = sprite_sheet.subsurface(frame_rect)
-    frame = pygame.transform.scale(frame, (TILE_SIZE, TILE_SIZE))
-    player_frames.append(frame)
+# Extrair os frames e armazenar em um dicionário
+player_frames = {
+    "down": extract_frames(sprite_sheet_down),
+    "up": extract_frames(sprite_sheet_up),
+    "left": extract_frames(sprite_sheet_left),
+    "right": extract_frames(sprite_sheet_right)
+}
+
+
 
 # Variáveis de controle da animação
 current_frame = 0
@@ -142,10 +160,7 @@ def clamp_camera(camera_rect, world_width, world_height):
 # Função principal (main)
 # ---------------------------------------------------------------
 def main():
-    pygame.init()
-    SCREEN_WIDTH = 600
-    SCREEN_HEIGHT = 520
-    screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
+
     pygame.display.set_caption("Jogo do Labirinto com Câmera e Movimentação Suave")
     clock = pygame.time.Clock()
     ZOOM = 3
@@ -255,7 +270,7 @@ def main():
 
     # Configuração de fonte e velocidade de movimento
     font = pygame.font.SysFont(None, 24)
-    SPEED = 200
+    SPEED = 100
 
     animation_timer = 0
 
@@ -336,14 +351,19 @@ def main():
         if not moving and not game_over and not win:
             keys = pygame.key.get_pressed()
             dx, dy = 0, 0
+            global player_direction
             if keys[pygame.K_UP]:
                 dx, dy = 0, -1
+                player_direction = "up"
             elif keys[pygame.K_DOWN]:
                 dx, dy = 0, 1
+                player_direction = "down"
             elif keys[pygame.K_LEFT]:
                 dx, dy = -1, 0
+                player_direction = "left"
             elif keys[pygame.K_RIGHT]:
                 dx, dy = 1, 0
+                player_direction = "right"
 
             if dx != 0 or dy != 0:
                 new_x = player_grid[0] + dx
@@ -551,7 +571,10 @@ def main():
 
         # Desenha o jogador (imagem em vez de círculo)
         #world_surface.blit(player_img, (player_pos[0], player_pos[1]))
-        world_surface.blit(player_frames[current_frame], (player_pos[0], player_pos[1]))
+        #world_surface.blit(player_frames[current_frame], (player_pos[0], player_pos[1]))
+        # Desenha o jogador com o frame da direção atual
+        world_surface.blit(player_frames[player_direction][current_frame], (player_pos[0], player_pos[1]))
+
 
         #Desenha o obstáculo
         for obstaculo in obstaculo_din_pos_px:
