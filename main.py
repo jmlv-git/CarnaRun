@@ -38,7 +38,7 @@ maze = [
     [1,0,0,3,1,0,0,1,1,1,1,2,2,2,1],
     [1,0,0,0,0,0,0,0,4,0,0,0,0,0,1],
     [1,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
-    [1,0,0,1,1,1,1,1,1,1,0,0,1,1,1],
+    [1,0,0,1,1,1,1,1,1,1,0,0,1,0,1],
     [1,0,0,0,1,0,0,0,1,0,0,0,1,0,1],
     [1,0,0,0,1,1,1,1,1,1,0,0,1,0,1],
     [1,0,0,0,0,0,0,0,0,1,0,0,1,0,1],
@@ -324,7 +324,7 @@ def main():
             animation_timer += movement_dt
             if animation_timer >= animation_delay:
                 animation_timer = 0
-                current_frame = (current_frame + 1) % len(player_frames)
+                current_frame = (current_frame + 1) % len(frames_to_use)
         else:
             current_frame = 0
 
@@ -651,7 +651,7 @@ def main():
             frames_to_use = player_frames_B[player_direction]
         else:
             frames_to_use = player_frames[player_direction]
-            
+ 
         world_surface.blit(frames_to_use[current_frame], (player_pos[0], player_pos[1]))
 
 
