@@ -610,12 +610,12 @@ def main():
         # ---------------------------------------------------------------------
         path_dist = bfs_distance(maze, (player_grid[0], player_grid[1]),
                                  destination, b_count, jump_count)
-        if path_dist is not None:
-            dist_x = destination[0] - player_grid[0]
-            dist_y = destination[1] - player_grid[1]
-            euclidian_dist = math.hypot(dist_x, dist_y)
-        else:
-            euclidian_dist = None
+        
+        dist_x = destination[0] - player_grid[0]
+        dist_y = destination[1] - player_grid[1]
+            
+        euclidian_dist = math.hypot(dist_x, dist_y)
+
 
         # Atualiza o volume da música com base na distância
         if euclidian_dist is not None:
