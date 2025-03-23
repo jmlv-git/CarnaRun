@@ -47,6 +47,7 @@ maze = [
     [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]
 ]
 
+
 pygame.init()
 pygame.mixer.init()  # Inicializa o mixer, se ainda não estiver iniciado
 
@@ -237,7 +238,7 @@ def main():
     tile_images = {
         0: floor_img,
         1: wall_img,
-        #2: obstacle_img,
+        2: obstacle_img,
         3: powerup_a_img,
         4: powerup_b_img,
         5: powerup_c_img,
@@ -248,17 +249,6 @@ def main():
     # Lista de Obstáculos Dinâmicos
     moveu_obstaculo = False
 
-    obstaculos_fixo_grid = [
-        [11, 3], 
-        [12, 3],
-        [13, 3],
-    ]
-
-    obstaculo_fix_pos_px = [
-        [obstaculos_fixo_grid[0][0] * TILE_SIZE, obstaculos_fixo_grid[0][1] * TILE_SIZE],
-        [obstaculos_fixo_grid[1][0] * TILE_SIZE, obstaculos_fixo_grid[1][1] * TILE_SIZE],
-        [obstaculos_fixo_grid[2][0] * TILE_SIZE, obstaculos_fixo_grid[2][1] * TILE_SIZE],
-    ]
 
     obstaculos_din_grid = [
         [9, 1, 0, 1, moveu_obstaculo], 
@@ -267,13 +257,23 @@ def main():
         [13, 4, -1, 0, moveu_obstaculo]
     ]
 
+    # [9, 1, 0, 1, moveu_obstaculo] => 
+    # [
+    #  pos_grid_x_obstaculo, 
+    #  pos_grid_y_obstaculo, 
+    #  movimentação horizonatal (-1 para esquerda, 1 para direita, 0 para movimentação vertical)
+    #  movimentação vertical (-1 para cima, 1 para baixo, 0 para movimentação horizontal)                                                                                   
+    # ]                                                                               
+
     obstaculo_din_target_grid = list(obstaculos_din_grid)
 
+    #garanti que o número de linhas abaixo seja igaul ao número de onstáculos dinâmcos
+    # importante garantir a ordem abaixo
     obstaculo_din_pos_px = [
         [obstaculos_din_grid[0][0] * TILE_SIZE, obstaculos_din_grid[0][1] * TILE_SIZE],
         [obstaculos_din_grid[1][0] * TILE_SIZE, obstaculos_din_grid[1][1] * TILE_SIZE],
         [obstaculos_din_grid[2][0] * TILE_SIZE, obstaculos_din_grid[2][1] * TILE_SIZE],
-        [obstaculos_din_grid[3][0] * TILE_SIZE, obstaculos_din_grid[3][1] * TILE_SIZE]
+        [obstaculos_din_grid[3][0] * TILE_SIZE, obstaculos_din_grid[3][1] * TILE_SIZE],
     ]
 
     # Estado de colisão
@@ -660,10 +660,6 @@ def main():
             x, y = obstaculo  # Pegamos a posição do obstáculo
             world_surface.blit(player_img, (x, y))  # Desenha a imagem do obstáculo
 
-        #Desenha o obstáculo fixos
-        for obstaculo in obstaculo_fix_pos_px:
-            x, y = obstaculo
-            world_surface.blit(obstacle_img, (x, y))  # Desenha a imagem do obstáculo
 
 
         
