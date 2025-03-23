@@ -216,7 +216,7 @@ def main():
 
     pygame.display.set_caption("Jogo do Labirinto com Câmera e Movimentação Suave")
     clock = pygame.time.Clock()
-    ZOOM = 3
+    ZOOM = 6
 
     # Superfície de todo o mundo (todo o labirinto)
     world_surface = pygame.Surface((WIDTH, HEIGHT))
@@ -647,6 +647,8 @@ def main():
         global emocao
         if  remaining_time < 30 and not emocao:
             emocao = True
+            pygame.mixer.music.stop()
+            pygame.mixer.music.load("sons/main_music_2.mp3")
             pygame.mixer.music.play(loops=0, start=141)
 
 
