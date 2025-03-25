@@ -148,6 +148,41 @@ animation_timer = 0
 animation_delay = 0.1  # segundos entre frames
 
 # ---------------------------------------------------------------
+# NOVA SEÇÃO: Animação direcional para obstáculos móveis
+# ---------------------------------------------------------------
+
+# Função para determinar a direção a partir do vetor de movimento
+def get_direction_from_vector(dx, dy):
+    if dx == 1:
+        return "right"
+    elif dx == -1:
+        return "left"
+    elif dy == 1:
+        return "down"
+    elif dy == -1:
+        return "up"
+    return "down"  # padrão caso não haja movimento
+
+# Carregar as spritesheets dos obstáculos móveis para cada direção
+obstacle_sprite_sheet_down = pygame.image.load("imagens/obstacle_spritesheet_down.png").convert_alpha()
+obstacle_sprite_sheet_up = pygame.image.load("imagens/obstacle_spritesheet_up.png").convert_alpha()
+obstacle_sprite_sheet_left = pygame.image.load("imagens/obstacle_spritesheet_left.png").convert_alpha()
+obstacle_sprite_sheet_right = pygame.image.load("imagens/obstacle_spritesheet_right.png").convert_alpha()
+
+# Extrair os frames usando a função extract_frames
+obstacle_frames = {
+    "down": extract_frames(obstacle_sprite_sheet_down),
+    "up": extract_frames(obstacle_sprite_sheet_up),
+    "left": extract_frames(obstacle_sprite_sheet_left),
+    "right": extract_frames(obstacle_sprite_sheet_right)
+}
+
+# Variáveis de controle da animação dos obstáculos
+obstacle_animation_timer = 0
+obstacle_animation_delay = 0.1  # segundos entre frames
+obstacle_current_frame = 0
+
+# ---------------------------------------------------------------
 # Funções de apoio
 # ---------------------------------------------------------------
 def is_traversable(cell, b_count, jump_count):
@@ -271,8 +306,8 @@ def main():
 
 
     obstaculos_din_grid = [
-        #[9, 1, 0, 1, moveu_obstaculo], 
-        # [6, 1, 0, 1, moveu_obstaculo],
+        [2, 2, -1, 0, moveu_obstaculo], 
+        [7, 2, 0, 1, moveu_obstaculo],
         # [2, 9, 0, -1, moveu_obstaculo],
         # [13, 4, -1, 0, moveu_obstaculo]
     ]
@@ -290,8 +325,8 @@ def main():
     #garanti que o número de linhas abaixo seja igaul ao número de onstáculos dinâmcos
     # importante garantir a ordem abaixo
     obstaculo_din_pos_px = [
-        #[obstaculos_din_grid[0][0] * TILE_SIZE, obstaculos_din_grid[0][1] * TILE_SIZE],
-        # [obstaculos_din_grid[1][0] * TILE_SIZE, obstaculos_din_grid[1][1] * TILE_SIZE],
+        [obstaculos_din_grid[0][0] * TILE_SIZE, obstaculos_din_grid[0][1] * TILE_SIZE],
+        [obstaculos_din_grid[1][0] * TILE_SIZE, obstaculos_din_grid[1][1] * TILE_SIZE],
         # [obstaculos_din_grid[2][0] * TILE_SIZE, obstaculos_din_grid[2][1] * TILE_SIZE],
         # [obstaculos_din_grid[3][0] * TILE_SIZE, obstaculos_din_grid[3][1] * TILE_SIZE],
     ]
@@ -330,6 +365,8 @@ def main():
 
     animation_timer = 0
 
+    global obstacle_animation_timer, obstacle_current_frame
+
     # Loop principal
     while True:
         # "real_dt" é o tempo real entre frames (usado na física e no movimento)
@@ -347,6 +384,14 @@ def main():
                 current_frame = (current_frame + 1) % len(frames_to_use)
         else:
             current_frame = 0
+
+        # Atualiza a animação dos obstáculos móveis (para todos em sincronia)
+        if len(obstaculo_din_pos_px) > 0:
+            obstacle_animation_timer += movement_dt
+            if obstacle_animation_timer >= obstacle_animation_delay:
+                obstacle_animation_timer = 0
+                obstacle_current_frame = (obstacle_current_frame + 1) % len(obstacle_frames["down"])  # assume mesmo número de frames para todas as direções
+
 
         # Verifica se o slow está ativo e se já acabou
         if time_slow_active:
@@ -688,11 +733,16 @@ def main():
         world_surface.blit(frames_to_use[current_frame], (player_pos[0], player_pos[1]))
 
 
-        #Desenha o obstáculo
-        for obstaculo in obstaculo_din_pos_px:
-            x, y = obstaculo  # Pegamos a posição do obstáculo
-            world_surface.blit(player_img, (x, y))  # Desenha a imagem do obstáculo
-
+         # Desenha os obstáculos móveis com animação direcional
+        for i, obstaculo in enumerate(obstaculo_din_pos_px):
+            x, y = obstaculo  # Posição atual em pixels
+            # Obter a direção com base no vetor de movimento armazenado para o obstáculo
+            # Se o obstáculo não estiver se movendo, usamos o último vetor ou um padrão
+            dx = obstaculos_din_grid[i][2] if i < len(obstaculos_din_grid) else 0
+            dy = obstaculos_din_grid[i][3] if i < len(obstaculos_din_grid) else 0
+            direction = get_direction_from_vector(dx, dy)
+            frame = obstacle_frames[direction][obstacle_current_frame]
+            world_surface.blit(frame, (x, y))
 
 
         
