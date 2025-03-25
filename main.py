@@ -74,6 +74,8 @@ pickup_sound = pygame.mixer.Sound("sons/pickup_sound.wav")
 use_sound = pygame.mixer.Sound("sons/use_sound.wav")
 game_over_sound = pygame.mixer.Sound("sons/game_over.mp3")
 win_sound = pygame.mixer.Sound("sons/win_sound.wav")
+movement_sound = pygame.mixer.Sound("sons/player_movement_sound.wav")
+
 
 pygame.mixer.music.load("sons/main_music.mp3")
 pygame.mixer.music.play(-1)  # -1 para repetir indefinidamente
@@ -351,7 +353,7 @@ def main():
     time_slow_end = 0
 
     # Tempo total e estado do jogo
-    total_time = 200
+    total_time = 60
     remaining_time = total_time
     game_over = False
     win = False
@@ -534,6 +536,7 @@ def main():
                     if cell in (0, 8, 3, 4, 5, 7) and moving == False:
                         target_grid = [new_x, new_y]
                         moving = True
+                        movement_sound.play() # Toca o som de movimento
                     # Obstáculo transponível (2) com B disponível
                     elif cell == 2 and b_count > 0 and moving == False:
                         target_grid = [new_x, new_y]
