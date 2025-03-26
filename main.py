@@ -353,7 +353,7 @@ def main():
     time_slow_end = 0
 
     # Tempo total e estado do jogo
-    total_time = 60
+    total_time = 200
     remaining_time = total_time
     game_over = False
     win = False
@@ -732,8 +732,13 @@ def main():
             frames_to_use = player_frames_B[player_direction]
         else:
             frames_to_use = player_frames[player_direction]
+
+        frame_to_draw = frames_to_use[current_frame].copy()
+
+        if b_count > 0:
+            frame_to_draw.set_alpha(128)
  
-        world_surface.blit(frames_to_use[current_frame], (player_pos[0], player_pos[1]))
+        world_surface.blit(frame_to_draw, (player_pos[0], player_pos[1]))
 
 
          # Desenha os obstáculos móveis com animação direcional
