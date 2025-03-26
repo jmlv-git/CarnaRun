@@ -36,15 +36,15 @@ maze = [
    [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
    [1,8,0,0,0,0,0,0,0,0,0,0,1,4,0,0,0,1,1,0,0,0,0,0,0,0,1,0,0,1],
    [1,8,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,1,1,0,0,0,0,0,0,0,1,0,0,1],
-   [1,1,1,1,1,1,1,0,0,1,0,0,1,1,1,1,0,1,1,0,1,1,1,1,1,1,1,0,0,1],
-   [1,2,2,4,0,4,1,0,0,1,0,0,0,0,0,0,0,1,1,0,0,0,0,1,0,0,0,0,0,1],
-   [1,0,2,0,2,4,1,0,0,1,0,0,0,2,0,0,0,1,1,0,0,0,0,1,0,0,0,0,0,1],
-   [1,0,2,1,1,1,1,0,0,1,1,1,1,1,1,1,1,1,1,1,1,0,0,1,1,1,1,0,0,1],
-   [1,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,0,0,0,0,1],
-   [1,2,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,0,0,0,0,1],
+   [1,1,1,1,1,1,1,0,9,1,0,0,1,1,1,1,0,1,1,0,1,1,1,1,1,1,1,0,0,1],
+   [1,2,2,4,0,4,1,0,9,1,0,0,0,0,0,0,0,1,1,0,0,0,0,1,0,0,0,0,0,1],
+   [1,0,2,0,2,4,1,0,9,1,0,0,0,2,0,0,0,1,1,0,0,0,0,1,0,0,0,0,0,1],
+   [1,0,2,1,1,1,1,0,9,1,1,1,1,1,1,1,1,1,1,1,1,0,0,1,1,1,1,0,0,1],
+   [1,0,0,0,0,0,0,0,9,1,0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,0,0,0,0,1],
+   [1,2,0,0,0,0,0,0,9,1,0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,0,0,0,0,1],
    [1,1,1,1,0,0,1,1,1,1,0,0,1,1,1,1,1,1,1,2,1,1,1,1,1,1,1,1,1,1],
-   [1,0,0,1,0,0,0,0,0,1,0,0,0,2,0,0,0,0,0,0,1,0,0,0,0,0,1,0,0,1],
-   [1,0,0,1,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,1,0,0,1],
+   [1,3,0,1,0,0,0,0,0,1,0,0,9,2,9,0,0,0,0,0,1,0,0,0,0,0,1,0,0,1],
+   [1,0,0,1,0,0,0,0,0,1,0,0,9,9,9,9,0,0,0,0,1,0,0,0,0,0,1,0,0,1],
    [1,0,0,1,1,1,1,0,0,1,0,0,1,1,1,1,0,1,1,1,1,1,1,1,0,0,1,0,0,1],
    [1,0,0,1,0,0,0,0,0,0,0,0,1,0,0,1,0,0,0,0,0,0,0,0,0,0,1,0,0,1],
    [1,0,0,1,0,0,0,0,0,0,0,0,1,0,0,1,0,0,0,0,0,0,0,0,0,0,1,0,0,1],
@@ -171,6 +171,9 @@ obstacle_sprite_sheet_up = pygame.image.load("imagens/obstacle_spritesheet_up.pn
 obstacle_sprite_sheet_left = pygame.image.load("imagens/obstacle_spritesheet_left.png").convert_alpha()
 obstacle_sprite_sheet_right = pygame.image.load("imagens/obstacle_spritesheet_right.png").convert_alpha()
 
+life_img = pygame.image.load("imagens/heart.png").convert_alpha()
+life_img = pygame.transform.scale(life_img, (20, 20)) 
+
 # Extrair os frames usando a função extract_frames
 obstacle_frames = {
     "down": extract_frames(obstacle_sprite_sheet_down),
@@ -189,7 +192,7 @@ obstacle_current_frame = 0
 # ---------------------------------------------------------------
 def is_traversable(cell, b_count, jump_count):
     """Verifica se a célula pode ser atravessada dadas as cargas de B e C."""
-    if cell in (0, 8, 3, 4, 5, 7):
+    if cell in (0, 8, 3, 4, 5, 7, 9):
         return True
     if cell == 2 and b_count > 0:
         return True
@@ -253,7 +256,8 @@ def main():
 
     pygame.display.set_caption("Jogo do Labirinto com Câmera e Movimentação Suave")
     clock = pygame.time.Clock()
-    ZOOM = 6
+    player_lives = 3
+    ZOOM = 2
 
     # Superfície de todo o mundo (todo o labirinto)
     world_surface = pygame.Surface((WIDTH, HEIGHT))
@@ -266,6 +270,7 @@ def main():
     powerup_a_img = pygame.image.load("imagens/powerup_a.png").convert_alpha()
     powerup_b_img = pygame.image.load("imagens/powerup_b.png").convert_alpha()
     powerup_c_img = pygame.image.load("imagens/powerup_c.png").convert_alpha()
+    mud_img = pygame.image.load("imagens/mud.png").convert_alpha()
     dest_img = pygame.image.load("imagens/destination.png").convert_alpha()
     start_img = pygame.image.load("imagens/start.png").convert_alpha()
 
@@ -287,6 +292,7 @@ def main():
     powerup_a_img = pygame.transform.scale(powerup_a_img, (TILE_SIZE, TILE_SIZE))
     powerup_b_img = pygame.transform.scale(powerup_b_img, (TILE_SIZE, TILE_SIZE))
     powerup_c_img = pygame.transform.scale(powerup_c_img, (TILE_SIZE, TILE_SIZE))
+    mud_img = pygame.transform.scale(mud_img, (TILE_SIZE, TILE_SIZE))
     dest_img = pygame.transform.scale(dest_img, (TILE_SIZE, TILE_SIZE))
     start_img = pygame.transform.scale(start_img, (TILE_SIZE, TILE_SIZE))
     player_img = pygame.transform.scale(player_img, (TILE_SIZE, TILE_SIZE))
@@ -300,7 +306,8 @@ def main():
         4: powerup_b_img,
         5: powerup_c_img,
         7: dest_img,
-        8: start_img
+        8: start_img,
+        9: mud_img
     }
 
     # Lista de Obstáculos Dinâmicos
@@ -353,7 +360,7 @@ def main():
     time_slow_end = 0
 
     # Tempo total e estado do jogo
-    total_time = 60
+    total_time = 600
     remaining_time = total_time
     game_over = False
     win = False
@@ -363,7 +370,8 @@ def main():
 
     # Configuração de fonte e velocidade de movimento
     font = pygame.font.SysFont(None, 24)
-    SPEED = 100
+    SPEED_OBSTACLE = 100
+    SPEED_PLAYER = 100
 
     animation_timer = 0
 
@@ -437,6 +445,12 @@ def main():
 
                     if new_x_obstaculo == player_grid[0] and new_y_obstaculo == player_grid[1]:
                         print("entra ?")
+                        player_lives -= 1
+                        # Reset player to start position after hitting an obstacle
+                        player_grid = [1, 1]
+                        player_pos = [player_grid[0] * TILE_SIZE, player_grid[1] * TILE_SIZE]
+                        target_grid = list(player_grid)
+                        moving = False
                         obstaculos_din_grid[index][4] = False
                         obstaculo_din_target_grid[index] = list(obstaculos_din_grid[index])
                     elif celll_obstaculo == 1:
@@ -533,7 +547,7 @@ def main():
                             
                     cell = maze[new_y][new_x]
                     # Caminho livre, power-up ou destino
-                    if cell in (0, 8, 3, 4, 5, 7) and moving == False:
+                    if cell in (0, 8, 3, 4, 5, 7, 9) and moving == False:
                         target_grid = [new_x, new_y]
                         moving = True
                         movement_sound.play() # Toca o som de movimento
@@ -550,7 +564,7 @@ def main():
                         if jump_count > 0 and 0 <= jump_x < COLS and 0 <= jump_y < ROWS:
                             landing_cell = maze[jump_y][jump_x]
                             # Pode pousar em 0, 8, 3, 4, 5, 7 ou 2 (desde que haja B)
-                            if landing_cell in (0, 8, 3, 4, 5, 7):
+                            if landing_cell in (0, 8, 3, 4, 5, 7, 9):
                                 target_grid = [jump_x, jump_y]
                                 moving = True
                                 jump_count -= 1
@@ -579,7 +593,7 @@ def main():
                 
                 # Movimentação suave
                 # Distancia a percorrer = Velocidade (px/seg) * Intervalo de tempo (frame)
-                move_obstaculo_dist = SPEED * movement_dt  
+                move_obstaculo_dist = SPEED_OBSTACLE * movement_dt  
 
                 if distance_obstaculo < 1e-5:
                     # Chegou ao destino em pixels
@@ -631,7 +645,7 @@ def main():
 
             else:
                 # Ainda não chegou, avança gradualmente
-                move_dist = SPEED * movement_dt
+                move_dist = SPEED_PLAYER * movement_dt
                 if move_dist < distance:
                     player_pos[0] += (dx_px / distance) * move_dist
                     player_pos[1] += (dy_px / distance) * move_dist
@@ -644,9 +658,14 @@ def main():
 
                     # Verifica power-up/destino
                     current_cell = maze[player_grid[1]][player_grid[0]]
-                    if current_cell == 3:
+                    if current_cell == 30:
                         time_slow_active = True
                         time_slow_end = pygame.time.get_ticks() / 1000.0 + 10
+                        maze[player_grid[1]][player_grid[0]] = 0
+                        pickup_sound.play()
+                    elif current_cell == 3:
+                        print("AChoou A ?")
+                        remaining_time += 15
                         maze[player_grid[1]][player_grid[0]] = 0
                         pickup_sound.play()
                     elif current_cell == 4:
@@ -659,6 +678,10 @@ def main():
                         pickup_sound.play()
                     elif current_cell == 7:
                         win = True
+                    elif current_cell == 9:
+                        SPEED_PLAYER = 30
+                    else:
+                        SPEED_PLAYER = 100
 
         
 
@@ -791,6 +814,9 @@ def main():
         # screen.blit(powerup_text, (10, 50))
         global sound_game_over_played
         global sound_win_played
+
+        if player_lives <= 0:
+                game_over = True
         # Mensagens de fim de jogo
         if game_over:
             # Centraliza a imagem de game over na tela
@@ -823,6 +849,8 @@ def main():
         screen.blit(hud_background, hud_rect)
         # Desenha o texto do tempo em cima da imagem; ajuste a posição com base em hud_rect
         screen.blit(time_text, (hud_rect.left + text_rect.left, hud_rect.top + text_rect.top))
+        for i in range(player_lives):
+            screen.blit(life_img, (10 + i * 25, 10))
         pygame.display.flip()
 
 if __name__ == "__main__":
