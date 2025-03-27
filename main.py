@@ -1,4 +1,5 @@
 import pygame
+import time
 import sys
 import math
 from collections import deque
@@ -75,6 +76,7 @@ use_sound = pygame.mixer.Sound("sons/use_sound.wav")
 game_over_sound = pygame.mixer.Sound("sons/game_over.mp3")
 win_sound = pygame.mixer.Sound("sons/win_sound.wav")
 movement_sound = pygame.mixer.Sound("sons/player_movement_sound.wav")
+colision_sound = pygame.mixer.Sound("sons/colision.wav")
 
 
 pygame.mixer.music.load("sons/main_music.mp3")
@@ -87,10 +89,12 @@ screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
 # Carrega as imagens para as mensagens de vitória e derrota
 win_image = pygame.image.load("imagens/win_image.png").convert_alpha()
 game_over_image = pygame.image.load("imagens/game_over_image.png").convert_alpha()
+colision_image = pygame.image.load("imagens/colision_image.png").convert_alpha()
 
 # Opcional: Redimensione as imagens para o tamanho desejado
 win_image = pygame.transform.scale(win_image, (300, 200))
 game_over_image = pygame.transform.scale(game_over_image, (300, 200))
+colision_image = pygame.transform.scale(colision_image, (300, 200))
 
 # Variável global inicial para direção
 player_direction = "down"  # valor padrão
@@ -374,6 +378,7 @@ def main():
     SPEED_PLAYER = 100
 
     animation_timer = 0
+    colided = False
 
     global obstacle_animation_timer, obstacle_current_frame
 
@@ -449,6 +454,9 @@ def main():
                         # Reset player to start position after hitting an obstacle
                         player_grid = [1, 1]
                         player_pos = [player_grid[0] * TILE_SIZE, player_grid[1] * TILE_SIZE]
+
+                        colided = True
+
                         target_grid = list(player_grid)
                         moving = False
                         obstaculos_din_grid[index][4] = False
@@ -815,8 +823,14 @@ def main():
         global sound_game_over_played
         global sound_win_played
 
+
         if player_lives <= 0:
                 game_over = True
+
+        if colided:
+            colision_image_rect = colision_image.get_rect(center=(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2))
+            screen.blit(colision_image, colision_image_rect)
+
         # Mensagens de fim de jogo
         if game_over:
             # Centraliza a imagem de game over na tela
@@ -852,6 +866,11 @@ def main():
         for i in range(player_lives):
             screen.blit(life_img, (10 + i * 25, 10))
         pygame.display.flip()
+
+        if colided:
+            colision_sound.play()
+            time.sleep(1)
+            colided = False
 
 if __name__ == "__main__":
     main()
