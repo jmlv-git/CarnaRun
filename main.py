@@ -867,7 +867,7 @@ def main():
             screen.blit(life_img, (10 + i * 25, 10))
         pygame.display.flip()
 
-        if colided:
+        if colided and player_lives > 0:
             colision_sound.play()
             time.sleep(1)
             colided = False
