@@ -294,7 +294,7 @@ def main():
 
     pygame.display.set_caption("Jogo do Labirinto com Câmera e Movimentação Suave")
     clock = pygame.time.Clock()
-    ZOOM = 6
+    ZOOM = 4
 
     # Superfície de todo o mundo (todo o labirinto)
     world_surface = pygame.Surface((WIDTH, HEIGHT))
@@ -792,10 +792,10 @@ def main():
             direction = get_direction_from_vector(dx, dy)
             frame = obstacle_frames[direction][obstacle_current_frame]
             world_surface.blit(frame, (x, y))
-        global particles
-        # Desenha as partículas na superfície do mundo (world_surface) para que participem do efeito de câmera e zoom:
-        for particle in particles:
-            particle.draw(world_surface)
+        # global particles
+        # # Desenha as partículas na superfície do mundo (world_surface) para que participem do efeito de câmera e zoom:
+        # for particle in particles:
+        #     particle.draw(world_surface)
         
 
         # ---------------------------------------------------------------------
@@ -815,19 +815,19 @@ def main():
 
         
         # Dentro do loop principal, antes de atualizar e desenhar:
-        if random.random() < 0.05:
-            for _ in range(3):
-                # Cria partículas na parte superior da área visível (ou um pouco acima, para efeito de "caída")
-                spawn_x = random.randint(camera_rect.left, camera_rect.right)
-                spawn_y = camera_rect.top - 10  # 10 pixels acima da área visível
-                new_particle = Particle((spawn_x, spawn_y))
-                particles.append(new_particle)
+        # if random.random() < 0.05:
+        #     for _ in range(3):
+        #         # Cria partículas na parte superior da área visível (ou um pouco acima, para efeito de "caída")
+        #         spawn_x = random.randint(camera_rect.left, camera_rect.right)
+        #         spawn_y = camera_rect.top - 10  # 10 pixels acima da área visível
+        #         new_particle = Particle((spawn_x, spawn_y))
+        #         particles.append(new_particle)
         # Atualiza cada partícula
-        for particle in particles:
-            particle.update(movement_dt)  # 'movement_dt' é o delta time do frame
+        # for particle in particles:
+        #     particle.update(movement_dt)  # 'movement_dt' é o delta time do frame
 
         # Remove partículas que já expiraram
-        particles = [p for p in particles if not p.is_dead()]
+        # particles = [p for p in particles if not p.is_dead()]
 
         # ---------------------------------------------------------------------
         # HUD
