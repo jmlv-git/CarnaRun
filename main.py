@@ -5,7 +5,8 @@ import random
 import math
 import sys
 
-debug = False
+debug = False #usa o mapa debug, todo vazio so com o destino
+debugPrint = True #todos os prints estão no if debugPrint, com exceção de lugares onde o codigo nao deveria ir
 lvl = 2
 
 # ---------------------------------------------------------------
@@ -117,7 +118,7 @@ mazelvl2 = [
    [1,2,1,0,0,0,0,1,0,1,0,1,0,0,0,0,0,2,2,0,0,0,2,0,0,2,0,1,4,1],
    [1,2,1,0,0,0,0,1,0,1,1,1,1,1,1,1,0,0,0,2,2,0,0,0,0,0,0,1,4,1],
    [1,4,1,0,0,0,0,1,0,1,1,1,4,1,1,1,0,2,2,2,1,0,2,0,2,0,0,1,4,1],
-   [1,4,1,0,0,0,0,1,0,1,1,1,0,1,1,1,0,0,2,2,2,0,0,0,0,2,2,1,4,1],
+   [1,4,1,0,0,0,0,1,0,1,1,1,0,1,1,1,1,0,2,2,2,0,0,0,0,2,2,1,4,1],
    [1,4,1,0,1,1,1,1,0,1,1,1,0,1,1,1,0,2,0,2,0,2,2,0,0,0,0,1,2,1],
    [1,1,1,0,0,0,0,0,0,0,0,0,0,1,1,1,0,0,0,2,0,2,2,0,2,2,0,0,4,1],
    [1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
@@ -431,6 +432,8 @@ def main():
     # Lista de Obstáculos Dinâmicos
     moveu_obstaculo = False
 
+    if debug:
+        obstaculos_din_grid = []
     if lvl == 1:
         obstaculos_din_grid = [
             [2, 2, -1, 0, moveu_obstaculo], 
@@ -443,10 +446,11 @@ def main():
         obstaculos_din_grid = [
             [2, 2, -1, 0, moveu_obstaculo], 
             [12, 16, 0, 1, moveu_obstaculo],
+            [16, 5, 0, 1, moveu_obstaculo],
         ]
-    else: #debug
-        obstaculos_din_grid = [
-        ]
+    else:
+        print('esse mapa não tem NPCs dinâmicos')
+        obstaculos_din_grid = []
 
 
     # [9, 1, 0, 1, moveu_obstaculo] => 
@@ -461,12 +465,25 @@ def main():
 
     #garanti que o número de linhas abaixo seja igaul ao número de onstáculos dinâmcos
     # importante garantir a ordem abaixo
-    obstaculo_din_pos_px = [
+    if debug:
+        obstaculo_din_pos_px = []
+    elif lvl == 1:            
+        obstaculo_din_pos_px = [
         [obstaculos_din_grid[0][0] * TILE_SIZE, obstaculos_din_grid[0][1] * TILE_SIZE],
         [obstaculos_din_grid[1][0] * TILE_SIZE, obstaculos_din_grid[1][1] * TILE_SIZE],
         # [obstaculos_din_grid[2][0] * TILE_SIZE, obstaculos_din_grid[2][1] * TILE_SIZE],
         # [obstaculos_din_grid[3][0] * TILE_SIZE, obstaculos_din_grid[3][1] * TILE_SIZE],
-    ]
+    ]   
+
+    elif lvl == 2:
+        obstaculo_din_pos_px = [
+        [obstaculos_din_grid[0][0] * TILE_SIZE, obstaculos_din_grid[0][1] * TILE_SIZE],
+        [obstaculos_din_grid[1][0] * TILE_SIZE, obstaculos_din_grid[1][1] * TILE_SIZE],
+        [obstaculos_din_grid[2][0] * TILE_SIZE, obstaculos_din_grid[2][1] * TILE_SIZE],
+        # [obstaculos_din_grid[3][0] * TILE_SIZE, obstaculos_din_grid[3][1] * TILE_SIZE],
+    ]   
+
+
 
     # Estado de colisão
     collision = False
@@ -474,7 +491,9 @@ def main():
     list_collided_obstacle_index = []
 
     # Estado inicial do jogador
-    if lvl == 1:
+    if debug:
+        player_grid = [1, 1]
+    elif lvl == 1:
         player_grid = [1, 1]  # posição em coordenadas de grid (coluna, linha)
     elif lvl == 2:
         player_grid = [14, 15]
@@ -626,27 +645,31 @@ def main():
                         new_x_obstaculo = obstaculo_din_target_grid[index_obstaculo][0]
                         new_y_obstaculo = obstaculo_din_target_grid[index_obstaculo][1]
                         if (new_x == new_x_obstaculo and new_y == new_y_obstaculo):
-                            print("if 1")
+                            if debugPrint:
+                                print("if 1")
                             if b_count > 0:
                                 target_grid = [new_x, new_y]
                                 b_count -= 1
                                 use_sound.play()  # Toca o som ao usar o power-up
                                 moving = True
                             else: # Joga o boneco para tras
-                                print("bug do if 1")
+                                if debugPrint:
+                                    print("bug do if 1")
                                 new_x = player_grid[0]
                                 new_y = player_grid[1]
                                 target_grid = [new_x, new_y]
                                 moving == True
                         elif (player_grid[0] == new_x_obstaculo and player_grid[1] == new_y_obstaculo):
-                            print("if 2")
+                            if debugPrint:
+                                print("if 2")
                             if b_count > 0:
                                 target_grid = [new_x, new_y]
                                 b_count -= 1
                                 use_sound.play()  # Toca o som ao usar o power-up
                                 moving = True
                             else: # Joga o boneco para tras
-                                print("bug do if 2")
+                                if debugPrint:
+                                    print("bug do if 2")
                                 new_x = player_grid[0]
                                 new_y = player_grid[1] 
                                 obstaculos_din_grid[index_obstaculo][4] = False
@@ -655,16 +678,17 @@ def main():
                         else:
                             if (obstaculo_din_target_grid[index_obstaculo][0] == 2):
                                 x = 10
-                                print("Novo bug Jam")
-                                print("Posição Atual Jogador")
-                                print(player_grid)
-                                print("Posição Target Jogador")
                                 var_1 = [new_x,new_y]
-                                print(var_1)
-                                print("Posição Atual Obstaculos")
-                                print(obstaculos_din_grid[index_obstaculo])
-                                print("Posição Target Obstaculos")
-                                print(obstaculo_din_target_grid[index_obstaculo])
+                                if debugPrint:
+                                    print("Novo bug Jam")
+                                    print("Posição Atual Jogador")
+                                    print(player_grid)
+                                    print("Posição Target Jogador")
+                                    print(var_1)
+                                    print("Posição Atual Obstaculos")
+                                    print(obstaculos_din_grid[index_obstaculo])
+                                    print("Posição Target Obstaculos")
+                                    print(obstaculo_din_target_grid[index_obstaculo])
                                 
 
 
@@ -829,7 +853,7 @@ def main():
             max_distance = math.hypot(COLS - 1, ROWS - 1)
             volume = 0.2 + (max_distance - euclidian_dist) / max_distance
             volume = max(0.0, min(1.0, volume))
-            if debug:
+            if debugPrint:
                 if random.random() < 0.03: #printa o volume 3% das vezes (senao ele spamma o terminal)
                     print('Volume da musica: ', volume)
             pygame.mixer.music.set_volume(volume)
