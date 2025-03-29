@@ -1,8 +1,11 @@
-import pygame
-import sys
-import math
 from collections import deque
 import random
+import pygame
+import random
+import math
+import sys
+
+debug = True
 
 # ---------------------------------------------------------------
 # Mapa e constantes
@@ -31,6 +34,40 @@ import random
 #    [1,0,0,0,0,0,0,0,1,0,0,7,1,5,1],
 #    [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]
 #]
+
+#debug maze
+debugMaze = [
+   [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
+   [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+   [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+   [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+   [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+   [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+   [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+   [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+   [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+   [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+   [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+   [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+   [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+   [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+   [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+   [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+   [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+   [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+   [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+   [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+   [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+   [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+   [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+   [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+   [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+   [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+   [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+   [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+   [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,7,1],
+   [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
+]
 
 
 maze = [
@@ -66,6 +103,8 @@ maze = [
    [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
 ]
 
+if debug:
+    maze = debugMaze
 
 pygame.init()
 pygame.mixer.init()  # Inicializa o mixer, se ainda não estiver iniciado
@@ -729,21 +768,32 @@ def main():
         # Atualiza o volume da música com base na distância
         if euclidian_dist is not None:
             max_distance = math.hypot(COLS - 1, ROWS - 1)
-            volume = (max_distance - euclidian_dist) / max_distance
+            volume = 0.2 + (max_distance - euclidian_dist) / max_distance
             volume = max(0.0, min(1.0, volume))
+            if debug:
+                if random.random() < 0.03: #printa o volume 3% das vezes (senao ele spamma o terminal)
+                    print('Volume da musica: ', volume)
             pygame.mixer.music.set_volume(volume)
 
         global emocao
-        if  remaining_time < 30 and not emocao:
-            emocao = True
+
+        if remaining_time < 134 and not emocao:
+            emocao = "1.3x"
             pygame.mixer.music.stop()
-            pygame.mixer.music.load("sons/main_music_2.mp3")
-            pygame.mixer.music.play(loops=0, start=141)
+            pygame.mixer.music.load("sons/main_music 1.3.mp3")
+            pygame.mixer.music.play(loops=-1, start=50.7)
 
+        elif 84 > remaining_time > 30 and emocao == "1.3x":
+            emocao = "1.5x"
+            pygame.mixer.music.stop()
+            pygame.mixer.music.load("sons/main_music 1.5.mp3")
+            pygame.mixer.music.play(loops=-1, start=53)
 
-        elif euclidian_dist > 30 and emocao:
-            emocao = False  # Corrigido para garantir que a variável volte ao estado correto
-            pygame.mixer.music.play(loops=0, start=10)
+        elif remaining_time < 30 and emocao == "1.5":
+            emocao = "1.8x"
+            pygame.mixer.music.stop()
+            pygame.mixer.music.load("sons/main_music 1.8.mp3")
+            pygame.mixer.music.play(loops=-1, start=20)
 
 
         # ---------------------------------------------------------------------
