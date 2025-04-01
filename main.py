@@ -5,7 +5,6 @@ import time
 import sys
 import math
 from collections import deque
-import random
 
 # ---------------------------------------------------------------
 # Mapa e constantes
@@ -243,46 +242,6 @@ def clamp_camera(camera_rect, world_width, world_height):
 sound_game_over_played = False
 sound_win_played = False
 
-# Classe representando uma partícula individual
-class Particle:
-    def __init__(self, pos):
-        self.x, self.y = pos
-        # Velocidade aleatória para simular movimento (folhas ou confetes caindo)
-        self.vx = random.uniform(-50, 50)  # velocidade horizontal (px/s)
-        self.vy = random.uniform(20, 80)   # velocidade vertical (px/s)
-        self.lifetime = random.uniform(20, 30)  # tempo de vida em segundos
-        self.age = 0
-        self.size = random.randint(1, 3)
-        # Escolhe uma cor aleatória para as partículas (pode ser ajustada para folhas ou confetes)
-        self.color = random.choice([
-            (255, 215, 0),  # Amarelo Ouro
-            (148, 0, 211),  # Roxo Carnaval
-            (50, 205, 50),    # Verde Limão
-            (65, 105, 225),    # Azul Royal
-            (255, 20, 147),   # Rosa Choque
-            (220, 20, 60) #vermelho
-        ])
-        
-    def update(self, dt):
-        self.age += dt
-        self.x += self.vx * dt
-        self.y += self.vy * dt
-        # Simula uma leve oscilação horizontal para imitar movimento natural
-        self.vx += random.uniform(-10, 10) * dt
-        
-    def is_dead(self):
-        return self.age >= self.lifetime
-        
-    def draw(self, surface):
-        # Calcula a opacidade (fade out conforme a partícula envelhece)
-        alpha = max(0, int(255 * (1 - self.age / self.lifetime)))
-        # Cria uma pequena superfície com suporte a transparência para desenhar a partícula
-        particle_surface = pygame.Surface((self.size * 2, self.size * 2), pygame.SRCALPHA)
-        pygame.draw.circle(particle_surface, self.color + (alpha,), (self.size, self.size), self.size)
-        surface.blit(particle_surface, (int(self.x - self.size), int(self.y - self.size)))
-
-particles = []
-
 # ---------------------------------------------------------------
 # Função principal (main)
 # ---------------------------------------------------------------
@@ -303,8 +262,8 @@ def game_level():
     current_maze = levels[current_level].maze
     pygame.display.set_caption("Jogo do Labirinto com Câmera e Movimentação Suave")
     clock = pygame.time.Clock()
-    
-    ZOOM = 4
+    player_lives = 3
+    ZOOM = 6
 
     # Superfície de todo o mundo (todo o labirinto)
     world_surface = pygame.Surface((WIDTH, HEIGHT))
@@ -397,7 +356,6 @@ def game_level():
     time_slow_end = 0
 
     # Tempo total e estado do jogo
-
     total_time = 210
     
     remaining_time = total_time
@@ -811,13 +769,8 @@ def game_level():
             frames_to_use = player_frames_B[player_direction]
         else:
             frames_to_use = player_frames[player_direction]
-
-        frame_to_draw = frames_to_use[current_frame].copy()
-
-        if b_count > 0:
-            frame_to_draw.set_alpha(128)
  
-        world_surface.blit(frame_to_draw, (player_pos[0], player_pos[1]))
+        world_surface.blit(frames_to_use[current_frame], (player_pos[0], player_pos[1]))
 
 
          # Desenha os obstáculos móveis com animação direcional
@@ -830,10 +783,8 @@ def game_level():
             direction = get_direction_from_vector(dx, dy)
             frame = obstacle_frames[direction][obstacle_current_frame]
             world_surface.blit(frame, (x, y))
-        # global particles
-        # # Desenha as partículas na superfície do mundo (world_surface) para que participem do efeito de câmera e zoom:
-        # for particle in particles:
-        #     particle.draw(world_surface)
+
+
         
 
         # ---------------------------------------------------------------------
@@ -850,22 +801,6 @@ def game_level():
         camera_surface = world_surface.subsurface(camera_rect).copy()
         scaled_surface = pygame.transform.scale(camera_surface, (SCREEN_WIDTH, SCREEN_HEIGHT))
         screen.blit(scaled_surface, (0, 0))
-
-        
-        # Dentro do loop principal, antes de atualizar e desenhar:
-        # if random.random() < 0.05:
-        #     for _ in range(3):
-        #         # Cria partículas na parte superior da área visível (ou um pouco acima, para efeito de "caída")
-        #         spawn_x = random.randint(camera_rect.left, camera_rect.right)
-        #         spawn_y = camera_rect.top - 10  # 10 pixels acima da área visível
-        #         new_particle = Particle((spawn_x, spawn_y))
-        #         particles.append(new_particle)
-        # Atualiza cada partícula
-        # for particle in particles:
-        #     particle.update(movement_dt)  # 'movement_dt' é o delta time do frame
-
-        # Remove partículas que já expiraram
-        # particles = [p for p in particles if not p.is_dead()]
 
         # ---------------------------------------------------------------------
         # HUD
