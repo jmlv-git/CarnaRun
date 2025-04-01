@@ -894,10 +894,6 @@ def game_level():
         global sound_game_over_played
         global sound_win_played
 
-
-        if player_lives <= 0:
-                game_over = True
-
         if colided:
             colision_image_rect = colision_image.get_rect(center=(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2))
             screen.blit(colision_image, colision_image_rect)
