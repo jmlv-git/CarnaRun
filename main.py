@@ -398,7 +398,7 @@ def game_level():
 
     # Tempo total e estado do jogo
 
-    total_time = 210
+    total_time = 30
     
     remaining_time = total_time
     game_over = False
@@ -908,7 +908,9 @@ def game_level():
             if not sound_game_over_played:
                 game_over_sound.play()
                 sound_game_over_played = True
-            return False
+            if pygame.mixer.get_busy() == False:
+                sound_game_over_played = False
+                return False
         if win:
             # Centraliza a imagem de vitória na tela
             win_rect = win_image.get_rect(center=(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2))
