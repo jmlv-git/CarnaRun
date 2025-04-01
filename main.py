@@ -1,4 +1,7 @@
 import pygame
+import settings
+from levels import levels
+import time
 import sys
 import math
 from collections import deque
@@ -32,40 +35,17 @@ import random
 #    [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]
 #]
 
+global current_level
+current_level = 0
 
-maze = [
-   [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
-   [1,8,0,0,0,0,0,0,0,0,0,0,1,4,0,0,0,1,1,0,0,0,0,0,0,0,1,0,0,1],
-   [1,8,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,1,1,0,0,0,0,0,0,0,1,0,0,1],
-   [1,1,1,1,1,1,1,0,0,1,0,0,1,1,1,1,0,1,1,0,1,1,1,1,1,1,1,0,0,1],
-   [1,2,2,4,0,4,1,0,0,1,0,0,0,0,0,0,0,1,1,0,0,0,0,1,0,0,0,0,0,1],
-   [1,0,2,0,2,4,1,0,0,1,0,0,0,2,0,0,0,1,1,0,0,0,0,1,0,0,0,0,0,1],
-   [1,0,2,1,1,1,1,0,0,1,1,1,1,1,1,1,1,1,1,1,1,0,0,1,1,1,1,0,0,1],
-   [1,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,0,0,0,0,1],
-   [1,2,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,0,0,0,0,1],
-   [1,1,1,1,0,0,1,1,1,1,0,0,1,1,1,1,1,1,1,2,1,1,1,1,1,1,1,1,1,1],
-   [1,0,0,1,0,0,0,0,0,1,0,0,0,2,0,0,0,0,0,0,1,0,0,0,0,0,1,0,0,1],
-   [1,0,0,1,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,1,0,0,1],
-   [1,0,0,1,1,1,1,0,0,1,0,0,1,1,1,1,0,1,1,1,1,1,1,1,0,0,1,0,0,1],
-   [1,0,0,1,0,0,0,0,0,0,0,0,1,0,0,1,0,0,0,0,0,0,0,0,0,0,1,0,0,1],
-   [1,0,0,1,0,0,0,0,0,0,0,0,1,0,0,1,0,0,0,0,0,0,0,0,0,0,1,0,0,1],
-   [1,0,0,1,0,0,1,1,1,1,0,0,1,0,0,1,1,1,1,1,1,1,0,1,1,1,1,0,0,1],
-   [1,0,0,0,0,0,0,0,0,1,0,0,1,0,0,0,0,0,0,0,2,0,0,0,0,0,0,0,0,1],
-   [1,1,1,1,1,1,1,1,1,1,0,0,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1],
-   [1,1,1,1,1,1,1,1,1,1,0,0,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1],
-   [1,0,0,0,0,0,0,0,0,1,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
-   [1,2,0,1,1,1,1,0,0,1,1,1,1,0,1,1,0,1,1,1,1,0,0,1,0,0,1,1,1,1],
-   [1,0,0,1,1,1,1,0,0,1,1,1,1,0,1,1,2,1,1,1,1,0,0,1,0,0,1,1,1,1],
-   [1,0,2,1,0,0,1,0,0,0,0,0,0,0,1,1,0,1,1,0,0,0,0,1,0,2,0,0,0,1],
-   [1,0,0,1,0,0,1,1,1,1,1,1,1,1,1,1,2,1,1,1,1,1,1,1,1,1,1,0,2,1],
-   [1,2,0,1,0,0,0,0,0,1,0,0,0,0,1,1,0,2,2,0,0,0,0,0,0,0,0,0,0,1],
-   [1,0,0,1,0,0,0,0,0,1,0,0,0,0,1,1,0,2,0,0,0,0,0,0,0,0,0,0,0,1],
-   [1,0,2,1,1,1,1,0,0,1,0,0,1,0,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1],
-   [1,0,0,2,0,4,1,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
-   [1,2,0,0,0,2,1,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,7,1],
-   [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
-]
+global current_maze
+current_maze = levels[current_level].maze
 
+global total_time
+global remaining_time
+
+global ROWS
+global COLS
 
 pygame.init()
 pygame.mixer.init()  # Inicializa o mixer, se ainda não estiver iniciado
@@ -73,13 +53,24 @@ pygame.mixer.init()  # Inicializa o mixer, se ainda não estiver iniciado
 # Carrega os efeitos sonoros (substitua os caminhos pelos arquivos corretos)
 pickup_sound = pygame.mixer.Sound("sons/pickup_sound.wav")
 use_sound = pygame.mixer.Sound("sons/use_sound.wav")
+use_sound.set_volume(0.1)  # Ajuste o volume conforme necessário
 game_over_sound = pygame.mixer.Sound("sons/game_over.mp3")
 win_sound = pygame.mixer.Sound("sons/win_sound.wav")
+win_sound.set_volume(0.1)  # Ajuste o volume conforme necessário
 movement_sound = pygame.mixer.Sound("sons/player_movement_sound.wav")
+colision_sound = pygame.mixer.Sound("sons/colision.wav")
+main_drums = pygame.mixer.Sound("sons/main_drums.mp3")
+main_melody = pygame.mixer.Sound("sons/main_melody.mp3")
 
 
-pygame.mixer.music.load("sons/main_music.mp3")
-pygame.mixer.music.play(-1)  # -1 para repetir indefinidamente
+def setup_sound():
+    pygame.mixer.music.load("sons/main_bass.mp3")
+    pygame.mixer.music.play(-1)  # -1 para repetir indefinidamente
+    main_drums.play(loops = -1)  # -1 para repetir indefinidamente
+    main_melody.play(loops = -1) 
+    main_drums.set_volume(0)  # Ajuste o volume conforme necessário
+    main_melody.set_volume(0)  # Ajuste o volume conforme necessário
+
 
 SCREEN_WIDTH = 600
 SCREEN_HEIGHT = 520
@@ -88,16 +79,18 @@ screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
 # Carrega as imagens para as mensagens de vitória e derrota
 win_image = pygame.image.load("imagens/win_image.png").convert_alpha()
 game_over_image = pygame.image.load("imagens/game_over_image.png").convert_alpha()
+colision_image = pygame.image.load("imagens/colision_image.png").convert_alpha()
 
 # Opcional: Redimensione as imagens para o tamanho desejado
 win_image = pygame.transform.scale(win_image, (300, 200))
 game_over_image = pygame.transform.scale(game_over_image, (300, 200))
+colision_image = pygame.transform.scale(colision_image, (300, 200))
 
 # Variável global inicial para direção
 player_direction = "down"  # valor padrão
 
-ROWS = len(maze)
-COLS = len(maze[0])
+ROWS = len(current_maze)
+COLS = len(current_maze[0])
 TILE_SIZE = 16
 WIDTH = COLS * TILE_SIZE
 HEIGHT = ROWS * TILE_SIZE
@@ -172,6 +165,9 @@ obstacle_sprite_sheet_up = pygame.image.load("imagens/obstacle_spritesheet_up.pn
 obstacle_sprite_sheet_left = pygame.image.load("imagens/obstacle_spritesheet_left.png").convert_alpha()
 obstacle_sprite_sheet_right = pygame.image.load("imagens/obstacle_spritesheet_right.png").convert_alpha()
 
+life_img = pygame.image.load("imagens/heart.png").convert_alpha()
+life_img = pygame.transform.scale(life_img, (20, 20)) 
+
 # Extrair os frames usando a função extract_frames
 obstacle_frames = {
     "down": extract_frames(obstacle_sprite_sheet_down),
@@ -190,7 +186,7 @@ obstacle_current_frame = 0
 # ---------------------------------------------------------------
 def is_traversable(cell, b_count, jump_count):
     """Verifica se a célula pode ser atravessada dadas as cargas de B e C."""
-    if cell in (0, 8, 3, 4, 5, 7):
+    if cell in (0, 8, 3, 4, 5, 7, 9):
         return True
     if cell == 2 and b_count > 0:
         return True
@@ -290,10 +286,24 @@ particles = []
 # ---------------------------------------------------------------
 # Função principal (main)
 # ---------------------------------------------------------------
-def main():
 
+
+
+
+def game_level():
+    setup_sound()
+    global current_maze
+    global current_level
+    global total_time
+    global remaining_time
+
+    play_drums = False
+    play_melody = False
+    
+    current_maze = levels[current_level].maze
     pygame.display.set_caption("Jogo do Labirinto com Câmera e Movimentação Suave")
     clock = pygame.time.Clock()
+    
     ZOOM = 4
 
     # Superfície de todo o mundo (todo o labirinto)
@@ -307,6 +317,7 @@ def main():
     powerup_a_img = pygame.image.load("imagens/powerup_a.png").convert_alpha()
     powerup_b_img = pygame.image.load("imagens/powerup_b.png").convert_alpha()
     powerup_c_img = pygame.image.load("imagens/powerup_c.png").convert_alpha()
+    mud_img = pygame.image.load("imagens/mud.png").convert_alpha()
     dest_img = pygame.image.load("imagens/destination.png").convert_alpha()
     start_img = pygame.image.load("imagens/start.png").convert_alpha()
 
@@ -328,6 +339,7 @@ def main():
     powerup_a_img = pygame.transform.scale(powerup_a_img, (TILE_SIZE, TILE_SIZE))
     powerup_b_img = pygame.transform.scale(powerup_b_img, (TILE_SIZE, TILE_SIZE))
     powerup_c_img = pygame.transform.scale(powerup_c_img, (TILE_SIZE, TILE_SIZE))
+    mud_img = pygame.transform.scale(mud_img, (TILE_SIZE, TILE_SIZE))
     dest_img = pygame.transform.scale(dest_img, (TILE_SIZE, TILE_SIZE))
     start_img = pygame.transform.scale(start_img, (TILE_SIZE, TILE_SIZE))
     player_img = pygame.transform.scale(player_img, (TILE_SIZE, TILE_SIZE))
@@ -341,19 +353,10 @@ def main():
         4: powerup_b_img,
         5: powerup_c_img,
         7: dest_img,
-        8: start_img
+        8: start_img,
+        9: mud_img
     }
-
-    # Lista de Obstáculos Dinâmicos
-    moveu_obstaculo = False
-
-
-    obstaculos_din_grid = [
-        [2, 2, -1, 0, moveu_obstaculo], 
-        [7, 2, 0, 1, moveu_obstaculo],
-        # [2, 9, 0, -1, moveu_obstaculo],
-        # [13, 4, -1, 0, moveu_obstaculo]
-    ]
+    obstaculos_din_grid = levels[current_level].obstacles
 
     # [9, 1, 0, 1, moveu_obstaculo] => 
     # [
@@ -367,11 +370,11 @@ def main():
 
     #garanti que o número de linhas abaixo seja igaul ao número de onstáculos dinâmcos
     # importante garantir a ordem abaixo
+
+
+
     obstaculo_din_pos_px = [
-        [obstaculos_din_grid[0][0] * TILE_SIZE, obstaculos_din_grid[0][1] * TILE_SIZE],
-        [obstaculos_din_grid[1][0] * TILE_SIZE, obstaculos_din_grid[1][1] * TILE_SIZE],
-        # [obstaculos_din_grid[2][0] * TILE_SIZE, obstaculos_din_grid[2][1] * TILE_SIZE],
-        # [obstaculos_din_grid[3][0] * TILE_SIZE, obstaculos_din_grid[3][1] * TILE_SIZE],
+        [obstaculo[0] * TILE_SIZE, obstaculo[1] * TILE_SIZE] for obstaculo in obstaculos_din_grid
     ]
 
     # Estado de colisão
@@ -380,7 +383,7 @@ def main():
     list_collided_obstacle_index = []
 
     # Estado inicial do jogador
-    player_grid = [1, 1]  # posição em coordenadas de grid (coluna, linha)
+    player_grid = levels[current_level].player_start  # posição em coordenadas de grid (coluna, linha)
     player_pos = [player_grid[0] * TILE_SIZE, player_grid[1] * TILE_SIZE]  # posição em pixels
     target_grid = list(player_grid)
     moving = False
@@ -394,19 +397,23 @@ def main():
     time_slow_end = 0
 
     # Tempo total e estado do jogo
-    total_time = 200
+
+    total_time = 210
+    
     remaining_time = total_time
     game_over = False
     win = False
 
     # Encontrar a posição do destino (7)
-    destination = find_destination(maze)
+    destination = find_destination(current_maze)
 
     # Configuração de fonte e velocidade de movimento
     font = pygame.font.SysFont(None, 24)
-    SPEED = 100
+    SPEED_OBSTACLE = 100
+    SPEED_PLAYER = 100
 
     animation_timer = 0
+    colided = False
 
     global obstacle_animation_timer, obstacle_current_frame
 
@@ -419,6 +426,12 @@ def main():
         # "timer_dt"    => usado na contagem regressiva (pode sofrer slow)
         movement_dt = real_dt
         timer_dt = real_dt
+
+        if not play_drums and remaining_time < 2*(total_time/3):
+            play_drums = True
+    
+        if not play_melody and remaining_time < total_time/3:
+            play_melody = True
 
         if moving:
             animation_timer += movement_dt
@@ -452,6 +465,8 @@ def main():
             if event.type == pygame.QUIT:
                 pygame.quit()
                 sys.exit()
+
+       # if not drums_played and remaining_time > total_time/3:
         
         # Movimentação dos obstáculos dinâmicos - grid
         for index, obstaculo in enumerate(obstaculos_din_grid):
@@ -466,7 +481,7 @@ def main():
 
                 new_x_obstaculo = pos_grid_x_obstaculo + dx
                 new_y_obstaculo = pos_grid_y_obstaculo + dy
-                celll_obstaculo = maze[new_y_obstaculo][new_x_obstaculo]
+                celll_obstaculo = current_maze[new_y_obstaculo][new_x_obstaculo]
 
                 # Veiricação de colisão entre obstáculos
                 for i in range(len(obstaculos_din_grid)):
@@ -478,6 +493,14 @@ def main():
 
                     if new_x_obstaculo == player_grid[0] and new_y_obstaculo == player_grid[1]:
                         print("entra ?")
+                        #player_lives -= 1
+                        # Reset player to start position after hitting an obstacle
+                        #player_grid = [1, 1]
+                        #player_pos = [player_grid[0] * TILE_SIZE, player_grid[1] * TILE_SIZE]
+                        #colided = True
+
+                        target_grid = list(player_grid)
+                        moving = False
                         obstaculos_din_grid[index][4] = False
                         obstaculo_din_target_grid[index] = list(obstaculos_din_grid[index])
                     elif celll_obstaculo == 1:
@@ -519,6 +542,8 @@ def main():
             elif keys[pygame.K_RIGHT]:
                 dx, dy = 1, 0
                 player_direction = "right"
+            
+                
 
             if dx != 0 or dy != 0:
                 new_x = player_grid[0] + dx
@@ -572,9 +597,9 @@ def main():
 
 
                             
-                    cell = maze[new_y][new_x]
+                    cell = current_maze[new_y][new_x]
                     # Caminho livre, power-up ou destino
-                    if cell in (0, 8, 3, 4, 5, 7) and moving == False:
+                    if cell in (0, 8, 3, 4, 5, 7, 9) and moving == False:
                         target_grid = [new_x, new_y]
                         moving = True
                         movement_sound.play() # Toca o som de movimento
@@ -589,9 +614,9 @@ def main():
                         jump_x = player_grid[0] + 2 * dx
                         jump_y = player_grid[1] + 2 * dy
                         if jump_count > 0 and 0 <= jump_x < COLS and 0 <= jump_y < ROWS:
-                            landing_cell = maze[jump_y][jump_x]
+                            landing_cell = current_maze[jump_y][jump_x]
                             # Pode pousar em 0, 8, 3, 4, 5, 7 ou 2 (desde que haja B)
-                            if landing_cell in (0, 8, 3, 4, 5, 7):
+                            if landing_cell in (0, 8, 3, 4, 5, 7, 9):
                                 target_grid = [jump_x, jump_y]
                                 moving = True
                                 jump_count -= 1
@@ -620,7 +645,7 @@ def main():
                 
                 # Movimentação suave
                 # Distancia a percorrer = Velocidade (px/seg) * Intervalo de tempo (frame)
-                move_obstaculo_dist = SPEED * movement_dt  
+                move_obstaculo_dist = SPEED_OBSTACLE * movement_dt  
 
                 if distance_obstaculo < 1e-5:
                     # Chegou ao destino em pixels
@@ -655,24 +680,24 @@ def main():
                 moving = False
 
                 # Verificar se há power-up ou destino nessa célula
-                current_cell = maze[player_grid[1]][player_grid[0]]
+                current_cell = current_maze[player_grid[1]][player_grid[0]]
                 if current_cell == 3:
                     # Power-up A => ativa slow
                     time_slow_active = True
                     time_slow_end = pygame.time.get_ticks() / 1000.0 + 10
-                    maze[player_grid[1]][player_grid[0]] = 0
+                    current_maze[player_grid[1]][player_grid[0]] = 0
                 elif current_cell == 4:
                     b_count += 1
-                    maze[player_grid[1]][player_grid[0]] = 0
+                    current_maze[player_grid[1]][player_grid[0]] = 0
                 elif current_cell == 5:
                     jump_count += 1
-                    maze[player_grid[1]][player_grid[0]] = 0
+                    current_maze[player_grid[1]][player_grid[0]] = 0
                 elif current_cell == 7:
                     win = True
 
             else:
                 # Ainda não chegou, avança gradualmente
-                move_dist = SPEED * movement_dt
+                move_dist = SPEED_PLAYER * movement_dt
                 if move_dist < distance:
                     player_pos[0] += (dx_px / distance) * move_dist
                     player_pos[1] += (dy_px / distance) * move_dist
@@ -684,22 +709,31 @@ def main():
                     moving = False
 
                     # Verifica power-up/destino
-                    current_cell = maze[player_grid[1]][player_grid[0]]
-                    if current_cell == 3:
+                    current_cell = current_maze[player_grid[1]][player_grid[0]]
+                    if current_cell == 30:
                         time_slow_active = True
                         time_slow_end = pygame.time.get_ticks() / 1000.0 + 10
-                        maze[player_grid[1]][player_grid[0]] = 0
+                        current_maze[player_grid[1]][player_grid[0]] = 0
+                        pickup_sound.play()
+                    elif current_cell == 3:
+                        print("AChoou A ?")
+                        remaining_time += 15
+                        current_maze[player_grid[1]][player_grid[0]] = 0
                         pickup_sound.play()
                     elif current_cell == 4:
                         b_count += 1
-                        maze[player_grid[1]][player_grid[0]] = 0
+                        current_maze[player_grid[1]][player_grid[0]] = 0
                         pickup_sound.play()
                     elif current_cell == 5:
                         jump_count += 1
-                        maze[player_grid[1]][player_grid[0]] = 0
+                        current_maze[player_grid[1]][player_grid[0]] = 0
                         pickup_sound.play()
                     elif current_cell == 7:
                         win = True
+                    elif current_cell == 9:
+                        SPEED_PLAYER = 30
+                    else:
+                        SPEED_PLAYER = 100
 
         
 
@@ -717,7 +751,7 @@ def main():
         # ---------------------------------------------------------------------
         # Verifica distância até o destino via BFS (para mostrar no HUD)
         # ---------------------------------------------------------------------
-        path_dist = bfs_distance(maze, (player_grid[0], player_grid[1]),
+        path_dist = bfs_distance(current_maze, (player_grid[0], player_grid[1]),
                                  destination, b_count, jump_count)
         
         dist_x = destination[0] - player_grid[0]
@@ -732,13 +766,17 @@ def main():
             volume = (max_distance - euclidian_dist) / max_distance
             volume = max(0.0, min(1.0, volume))
             pygame.mixer.music.set_volume(volume)
+            if play_drums:
+                main_drums.set_volume(volume)
+            if play_melody:
+                main_melody.set_volume(volume)
 
-        global emocao
-        if  remaining_time < 30 and not emocao:
-            emocao = True
-            pygame.mixer.music.stop()
-            pygame.mixer.music.load("sons/main_music_2.mp3")
-            pygame.mixer.music.play(loops=0, start=141)
+        # global emocao
+        # if  remaining_time < 30 and not emocao:
+        #     emocao = True
+        #     pygame.mixer.music.stop()
+        #     pygame.mixer.music.load("sons/main_music_2.mp3")
+        #     pygame.mixer.music.play(loops=0, start=141)
 
 
         elif euclidian_dist > 30 and emocao:
@@ -752,7 +790,7 @@ def main():
         world_surface.fill((0, 0, 0))
         for row in range(ROWS):
             for col in range(COLS):
-                cell = maze[row][col]
+                cell = current_maze[row][col]
                 x = col * TILE_SIZE
                 y = row * TILE_SIZE
 
@@ -855,6 +893,15 @@ def main():
         # screen.blit(powerup_text, (10, 50))
         global sound_game_over_played
         global sound_win_played
+
+
+        if player_lives <= 0:
+                game_over = True
+
+        if colided:
+            colision_image_rect = colision_image.get_rect(center=(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2))
+            screen.blit(colision_image, colision_image_rect)
+
         # Mensagens de fim de jogo
         if game_over:
             # Centraliza a imagem de game over na tela
@@ -864,14 +911,23 @@ def main():
             if not sound_game_over_played:
                 game_over_sound.play()
                 sound_game_over_played = True
+            return False
         if win:
             # Centraliza a imagem de vitória na tela
             win_rect = win_image.get_rect(center=(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2))
             screen.blit(win_image, win_rect)
             pygame.mixer.music.stop()
+            main_drums.stop()
+            main_melody.stop()
             if not sound_win_played:
                 win_sound.play()
                 sound_win_played = True
+            print("Lsdasdsadasdassdp")
+            if pygame.mixer.get_busy() == False:
+                current_level += 1
+                sound_win_played = False
+                print("Level up")
+                return True
 
         # Define a posição onde a HUD deve aparecer na tela (por exemplo, no topo central)
         hud_rect = hud_background.get_rect()
@@ -887,7 +943,14 @@ def main():
         screen.blit(hud_background, hud_rect)
         # Desenha o texto do tempo em cima da imagem; ajuste a posição com base em hud_rect
         screen.blit(time_text, (hud_rect.left + text_rect.left, hud_rect.top + text_rect.top))
+
         pygame.display.flip()
 
 if __name__ == "__main__":
-    main()
+
+    # Add more levels as needed
+
+    if game_level():
+        ROWS = len(current_maze)
+        COLS = len(current_maze[0])
+        game_level()
