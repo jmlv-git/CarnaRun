@@ -398,7 +398,7 @@ def game_level():
 
     # Tempo total e estado do jogo
 
-    total_time = 30
+    total_time = 210
     
     remaining_time = total_time
     game_over = False
@@ -905,6 +905,8 @@ def game_level():
             game_over_rect = game_over_image.get_rect(center=(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2))
             screen.blit(game_over_image, game_over_rect)
             pygame.mixer.music.stop()
+            main_drums.stop()
+            main_melody.stop()
             if not sound_game_over_played:
                 game_over_sound.play()
                 sound_game_over_played = True
