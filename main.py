@@ -1,5 +1,6 @@
 import pygame
 import settings
+from levels import levels
 import time
 import sys
 import math
@@ -33,8 +34,17 @@ from collections import deque
 #    [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]
 #]
 
+global current_level
+current_level = 0
 
-current_maze = settings.maze_phase_2
+global current_maze
+current_maze = levels[current_level].maze
+
+global total_time
+global remaining_time
+
+global ROWS
+global COLS
 
 pygame.init()
 pygame.mixer.init()  # Inicializa o mixer, se ainda não estiver iniciado
@@ -42,14 +52,24 @@ pygame.mixer.init()  # Inicializa o mixer, se ainda não estiver iniciado
 # Carrega os efeitos sonoros (substitua os caminhos pelos arquivos corretos)
 pickup_sound = pygame.mixer.Sound("sons/pickup_sound.wav")
 use_sound = pygame.mixer.Sound("sons/use_sound.wav")
+use_sound.set_volume(0.1)  # Ajuste o volume conforme necessário
 game_over_sound = pygame.mixer.Sound("sons/game_over.mp3")
 win_sound = pygame.mixer.Sound("sons/win_sound.wav")
+win_sound.set_volume(0.1)  # Ajuste o volume conforme necessário
 movement_sound = pygame.mixer.Sound("sons/player_movement_sound.wav")
 colision_sound = pygame.mixer.Sound("sons/colision.wav")
+main_drums = pygame.mixer.Sound("sons/main_drums.mp3")
+main_melody = pygame.mixer.Sound("sons/main_melody.mp3")
 
 
-pygame.mixer.music.load("sons/main_music.mp3")
-pygame.mixer.music.play(-1)  # -1 para repetir indefinidamente
+def setup_sound():
+    pygame.mixer.music.load("sons/main_bass.mp3")
+    pygame.mixer.music.play(-1)  # -1 para repetir indefinidamente
+    main_drums.play(loops = -1)  # -1 para repetir indefinidamente
+    main_melody.play(loops = -1) 
+    main_drums.set_volume(0)  # Ajuste o volume conforme necessário
+    main_melody.set_volume(0)  # Ajuste o volume conforme necessário
+
 
 SCREEN_WIDTH = 600
 SCREEN_HEIGHT = 520
@@ -225,12 +245,25 @@ sound_win_played = False
 # ---------------------------------------------------------------
 # Função principal (main)
 # ---------------------------------------------------------------
-def main():
 
+
+
+
+def game_level():
+    setup_sound()
+    global current_maze
+    global current_level
+    global total_time
+    global remaining_time
+
+    play_drums = False
+    play_melody = False
+    
+    current_maze = levels[current_level].maze
     pygame.display.set_caption("Jogo do Labirinto com Câmera e Movimentação Suave")
     clock = pygame.time.Clock()
     player_lives = 3
-    ZOOM = 2
+    ZOOM = 6
 
     # Superfície de todo o mundo (todo o labirinto)
     world_surface = pygame.Surface((WIDTH, HEIGHT))
@@ -282,9 +315,7 @@ def main():
         8: start_img,
         9: mud_img
     }
-
-
-    obstaculos_din_grid = settings.obstacles_moves_2
+    obstaculos_din_grid = levels[current_level].obstacles
 
     # [9, 1, 0, 1, moveu_obstaculo] => 
     # [
@@ -311,7 +342,7 @@ def main():
     list_collided_obstacle_index = []
 
     # Estado inicial do jogador
-    player_grid = [1, 1]  # posição em coordenadas de grid (coluna, linha)
+    player_grid = levels[current_level].player_start  # posição em coordenadas de grid (coluna, linha)
     player_pos = [player_grid[0] * TILE_SIZE, player_grid[1] * TILE_SIZE]  # posição em pixels
     target_grid = list(player_grid)
     moving = False
@@ -325,7 +356,8 @@ def main():
     time_slow_end = 0
 
     # Tempo total e estado do jogo
-    total_time = 200
+    total_time = 210
+    
     remaining_time = total_time
     game_over = False
     win = False
@@ -352,6 +384,12 @@ def main():
         # "timer_dt"    => usado na contagem regressiva (pode sofrer slow)
         movement_dt = real_dt
         timer_dt = real_dt
+
+        if not play_drums and remaining_time < 2*(total_time/3):
+            play_drums = True
+    
+        if not play_melody and remaining_time < total_time/3:
+            play_melody = True
 
         if moving:
             animation_timer += movement_dt
@@ -385,6 +423,8 @@ def main():
             if event.type == pygame.QUIT:
                 pygame.quit()
                 sys.exit()
+
+       # if not drums_played and remaining_time > total_time/3:
         
         # Movimentação dos obstáculos dinâmicos - grid
         for index, obstaculo in enumerate(obstaculos_din_grid):
@@ -460,6 +500,8 @@ def main():
             elif keys[pygame.K_RIGHT]:
                 dx, dy = 1, 0
                 player_direction = "right"
+            
+                
 
             if dx != 0 or dy != 0:
                 new_x = player_grid[0] + dx
@@ -682,13 +724,17 @@ def main():
             volume = (max_distance - euclidian_dist) / max_distance
             volume = max(0.0, min(1.0, volume))
             pygame.mixer.music.set_volume(volume)
+            if play_drums:
+                main_drums.set_volume(volume)
+            if play_melody:
+                main_melody.set_volume(volume)
 
-        global emocao
-        if  remaining_time < 30 and not emocao:
-            emocao = True
-            pygame.mixer.music.stop()
-            pygame.mixer.music.load("sons/main_music_2.mp3")
-            pygame.mixer.music.play(loops=0, start=141)
+        # global emocao
+        # if  remaining_time < 30 and not emocao:
+        #     emocao = True
+        #     pygame.mixer.music.stop()
+        #     pygame.mixer.music.load("sons/main_music_2.mp3")
+        #     pygame.mixer.music.play(loops=0, start=141)
 
 
         elif euclidian_dist > 30 and emocao:
@@ -800,14 +846,23 @@ def main():
             if not sound_game_over_played:
                 game_over_sound.play()
                 sound_game_over_played = True
+            return False
         if win:
             # Centraliza a imagem de vitória na tela
             win_rect = win_image.get_rect(center=(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2))
             screen.blit(win_image, win_rect)
             pygame.mixer.music.stop()
+            main_drums.stop()
+            main_melody.stop()
             if not sound_win_played:
                 win_sound.play()
                 sound_win_played = True
+            print("Lsdasdsadasdassdp")
+            if pygame.mixer.get_busy() == False:
+                current_level += 1
+                sound_win_played = False
+                print("Level up")
+                return True
 
         # Define a posição onde a HUD deve aparecer na tela (por exemplo, no topo central)
         hud_rect = hud_background.get_rect()
@@ -827,4 +882,10 @@ def main():
         pygame.display.flip()
 
 if __name__ == "__main__":
-    main()
+
+    # Add more levels as needed
+
+    if game_level():
+        ROWS = len(current_maze)
+        COLS = len(current_maze[0])
+        game_level()
