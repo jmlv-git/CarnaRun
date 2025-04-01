@@ -58,7 +58,6 @@ game_over_sound = pygame.mixer.Sound("sons/game_over.mp3")
 win_sound = pygame.mixer.Sound("sons/win_sound.wav")
 win_sound.set_volume(0.1)  # Ajuste o volume conforme necessário
 movement_sound = pygame.mixer.Sound("sons/player_movement_sound.wav")
-colision_sound = pygame.mixer.Sound("sons/colision.wav")
 main_drums = pygame.mixer.Sound("sons/main_drums.mp3")
 main_melody = pygame.mixer.Sound("sons/main_melody.mp3")
 
@@ -413,7 +412,6 @@ def game_level():
     SPEED_PLAYER = 100
 
     animation_timer = 0
-    colided = False
 
     global obstacle_animation_timer, obstacle_current_frame
 
@@ -493,14 +491,8 @@ def game_level():
 
                     if new_x_obstaculo == player_grid[0] and new_y_obstaculo == player_grid[1]:
                         print("entra ?")
-                        #player_lives -= 1
-                        # Reset player to start position after hitting an obstacle
-                        #player_grid = [1, 1]
-                        #player_pos = [player_grid[0] * TILE_SIZE, player_grid[1] * TILE_SIZE]
-                        #colided = True
 
-                        target_grid = list(player_grid)
-                        moving = False
+                        
                         obstaculos_din_grid[index][4] = False
                         obstaculo_din_target_grid[index] = list(obstaculos_din_grid[index])
                     elif celll_obstaculo == 1:
@@ -894,10 +886,6 @@ def game_level():
         global sound_game_over_played
         global sound_win_played
 
-
-        if colided:
-            colision_image_rect = colision_image.get_rect(center=(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2))
-            screen.blit(colision_image, colision_image_rect)
 
         # Mensagens de fim de jogo
         if game_over:
