@@ -397,7 +397,7 @@ def game_level():
 
     # Tempo total e estado do jogo
 
-    total_time = 210
+    total_time = 180
     
     remaining_time = total_time
     game_over = False
@@ -911,11 +911,11 @@ def game_level():
             if not sound_win_played:
                 win_sound.play()
                 sound_win_played = True
-            print("Lsdasdsadasdassdp")
             if pygame.mixer.get_busy() == False:
                 current_level += 1
                 sound_win_played = False
                 print("Level up")
+                wait_for_key()
                 return True
 
         # Define a posição onde a HUD deve aparecer na tela (por exemplo, no topo central)
@@ -935,11 +935,48 @@ def game_level():
 
         pygame.display.flip()
 
+def wait_for_key():
+            """Waits until any key is pressed."""
+            while True:
+                for event in pygame.event.get():
+                    if event.type == pygame.QUIT:
+                        pygame.quit()
+                        sys.exit()
+                    if event.type == pygame.KEYDOWN:
+                        return  
+def is_r_key_pressed():
+    """Returns True if the 'r' key is pressed, otherwise False."""
+    while True:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                sys.exit()
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_r:
+                    return True
+                elif event.key == pygame.K_ESCAPE:
+                    pygame.quit()
+                    sys.exit() 
+             
+
 if __name__ == "__main__":
 
     # Add more levels as needed
+    try_again = True
+    passed_level = False
 
-    if game_level():
-        ROWS = len(current_maze)
-        COLS = len(current_maze[0])
-        game_level()
+    while try_again:
+        if game_level():
+            try_again = False
+            passed_level = True
+        elif not is_r_key_pressed():
+            try_again = False
+
+    try_again = True
+    while passed_level and try_again:
+        if game_level():
+            try_again = False
+            passed_level = True
+        elif not is_r_key_pressed():
+            try_again = False
+
