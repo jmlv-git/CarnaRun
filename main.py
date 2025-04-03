@@ -2,12 +2,13 @@ from collections import deque
 import random
 import pygame
 import random
+import time
 import math
 import sys
 
 debug = False #usa o mapa debug, todo vazio so com o destino
 debugPrint = True #todos os prints estão no if debugPrint, com exceção de lugares onde o codigo nao deveria ir
-lvl = 2
+lvl = 1
 
 # ---------------------------------------------------------------
 # Mapa e constantes
@@ -380,6 +381,8 @@ def main():
     pygame.display.set_caption("Jogo do Labirinto com Câmera e Movimentação Suave")
     clock = pygame.time.Clock()
     ZOOM = 4
+    global lvl
+    global maze
 
     # Superfície de todo o mundo (todo o labirinto)
     world_surface = pygame.Surface((WIDTH, HEIGHT))
@@ -999,12 +1002,35 @@ def main():
                 sound_game_over_played = True
         if win:
             # Centraliza a imagem de vitória na tela
-            win_rect = win_image.get_rect(center=(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2))
-            screen.blit(win_image, win_rect)
             pygame.mixer.music.stop()
             if not sound_win_played:
                 win_sound.play()
                 sound_win_played = True
+
+            #passar de lvl
+            wait_key = False
+            while not wait_key:
+                win_rect = win_image.get_rect(center=(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2))
+                screen.blit(win_image, win_rect)
+                pygame.display.flip()
+                for event in pygame.event.get():
+                    if event.type == pygame.KEYDOWN:
+                        win = False
+                        sound_win_played = False
+                        pygame.mixer.music.load("sons/main_music.mp3")
+                        pygame.mixer.music.play(-1)
+
+                        if debug:
+                            main()
+                        elif lvl == 1:
+                            lvl = 2
+                            maze = mazelvl2
+                            main()
+                        elif lvl == 2:
+                            pygame.quit()
+                            sys.exit()
+        
+                    
 
         # Define a posição onde a HUD deve aparecer na tela (por exemplo, no topo central)
         hud_rect = hud_background.get_rect()
